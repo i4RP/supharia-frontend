@@ -47,8 +47,10 @@
                     style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.15)"
                 >
                     <div class="flex items-center gap-2 mb-2">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
-                        <span class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">GAME</span>
+                        <div class="w-[14px] h-[14px] rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
+                            <img src="/megaeth-logo.jpg" alt="MegaETH" class="w-full h-full object-cover" />
+                        </div>
+                        <span class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">MegaETH USD</span>
                     </div>
                     <div class="text-lg font-bold font-mono" style="color: #e8e8ff">${{ game_store.balance.toFixed(2) }}</div>
                 </div>
