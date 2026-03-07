@@ -10,28 +10,31 @@
             <!-- Chart (Game) -->
             <NuxtLink
                 to="/game/mode-c"
-                class="flex-1 flex items-center justify-center py-4"
-                :style="isGameRoute ? 'background: rgba(255,105,180,0.12)' : ''"
+                class="nav-btn flex-1 flex items-center justify-center py-4"
+                :class="{ 'nav-active': isGameRoute, 'nav-tapped': tapped === 'game' }"
+                @pointerdown="flashTap('game')"
             >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" :stroke="isGameRoute ? '#ff69b4' : 'rgba(255,255,255,0.4)'" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" :stroke="isGameRoute || tapped === 'game' ? '#ff69b4' : 'rgba(255,255,255,0.4)'" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
             </NuxtLink>
 
             <!-- Star (Ranking) -->
             <NuxtLink
                 to="/game/ranking"
-                class="flex-1 flex items-center justify-center py-4"
-                :style="isRankingRoute ? 'background: rgba(255,105,180,0.12)' : ''"
+                class="nav-btn flex-1 flex items-center justify-center py-4"
+                :class="{ 'nav-active': isRankingRoute, 'nav-tapped': tapped === 'ranking' }"
+                @pointerdown="flashTap('ranking')"
             >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" :stroke="isRankingRoute ? '#ff69b4' : 'rgba(255,255,255,0.4)'" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" :stroke="isRankingRoute || tapped === 'ranking' ? '#ff69b4' : 'rgba(255,255,255,0.4)'" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
             </NuxtLink>
 
             <!-- Profile (Wallet) -->
             <NuxtLink
                 to="/game/wallet"
-                class="flex-1 flex items-center justify-center py-4"
-                :style="isWalletRoute ? 'background: rgba(255,105,180,0.12)' : ''"
+                class="nav-btn flex-1 flex items-center justify-center py-4"
+                :class="{ 'nav-active': isWalletRoute, 'nav-tapped': tapped === 'wallet' }"
+                @pointerdown="flashTap('wallet')"
             >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" :stroke="isWalletRoute ? '#ff69b4' : 'rgba(255,255,255,0.4)'" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" :stroke="isWalletRoute || tapped === 'wallet' ? '#ff69b4' : 'rgba(255,255,255,0.4)'" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
             </NuxtLink>
         </div>
     </div>
@@ -52,4 +55,28 @@ const isGameRoute = computed(() => {
 const isRankingRoute = computed(() => route.path === "/game/ranking")
 
 const isWalletRoute = computed(() => route.path === "/game/wallet")
+
+// Tap flash feedback
+const tapped = ref<string | null>(null)
+let tapTimer: ReturnType<typeof setTimeout> | null = null
+
+function flashTap(name: string) {
+    if (tapTimer) clearTimeout(tapTimer)
+    tapped.value = name
+    tapTimer = setTimeout(() => { tapped.value = null }, 400)
+}
 </script>
+
+<style scoped>
+.nav-btn {
+    background: transparent;
+    transition: background 0.5s ease-out;
+}
+.nav-btn.nav-tapped {
+    background: rgba(255, 105, 180, 0.25) !important;
+    transition: background 0s;
+}
+.nav-btn.nav-active:not(.nav-tapped) {
+    background: rgba(255, 105, 180, 0.12);
+}
+</style>
