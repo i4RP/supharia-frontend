@@ -35,7 +35,7 @@
                 style="background: rgba(255,105,180,0.08); border: 1px solid rgba(212,96,154,0.25)"
             >
                 <div class="text-[11px] font-mono tracking-wider mb-1" style="color: rgba(255,255,255,0.4)">TOTAL BALANCE</div>
-                <div class="text-3xl font-bold font-mono" style="color: #ff69b4">${{ game_store.balance.toFixed(2) }}</div>
+                <div class="text-3xl font-bold font-mono" style="color: #ff69b4">${{ rusd_display }}</div>
                 <div class="text-[11px] font-mono mt-1" style="color: rgba(255,255,255,0.3)">{{ (game_store.total_pnl / 100).toFixed(2) }} P&amp;L</div>
             </div>
 
@@ -52,7 +52,7 @@
                         </div>
                         <span class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">MegaETH <a href="https://megaeth-testnet-v2.blockscout.com/address/0x48345110dB117682E5a4EBdD99919Aff5b872D43" target="_blank" rel="noopener noreferrer" class="underline" style="color: #ff69b4">rUSD</a></span>
                     </div>
-                    <div class="text-lg font-bold font-mono" style="color: #e8e8ff">${{ game_store.balance.toFixed(2) }}</div>
+                    <div class="text-lg font-bold font-mono" style="color: #e8e8ff">${{ rusd_display }}</div>
                 </div>
 
                 <!-- On-Chain ETH Balance -->
