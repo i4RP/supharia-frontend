@@ -76,8 +76,10 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
             view_center += (actual_price - view_center) * SMOOTH_FACTOR
         }
 
-        const half_rows = GAME_C_GRID.VISIBLE_ROWS / 2
-        const price_range = GAME_C_GRID.VISIBLE_ROWS * STEP
+        // Dynamic visible rows so cells stay square (cell_height == cell_width)
+        const visible_rows = Math.max(4, Math.floor(grid_height / cell_width_px))
+        const half_rows = visible_rows / 2
+        const price_range = visible_rows * STEP
         const price_top = view_center + half_rows * STEP
         const price_bottom = view_center - half_rows * STEP
         const px_per_price = grid_height / price_range
@@ -415,8 +417,10 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
         const grid_width = full_width - price_label_w
         const grid_height = full_height - TIME_LABEL_H
         const chart_head_x = grid_width * GAME_C_GRID.CHART_HEAD_RATIO
-        const px_per_ms = (grid_width - chart_head_x) / visible_cols / SLOT_MS
-        const price_range = GAME_C_GRID.VISIBLE_ROWS * STEP
+        const cell_width_px = (grid_width - chart_head_x) / visible_cols
+        const px_per_ms = cell_width_px / SLOT_MS
+        const visible_rows = Math.max(4, Math.floor(grid_height / cell_width_px))
+        const price_range = visible_rows * STEP
         const px_per_price = grid_height / price_range
 
         if (click_x < chart_head_x || click_x > grid_width) return
@@ -442,7 +446,7 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
         // Row offset from center price
         const cell_center_price = (cell_price_high + cell_price_low) / 2
         const row_offset = Math.round((cell_center_price - view_center) / STEP)
-        const half_rows = GAME_C_GRID.VISIBLE_ROWS / 2
+        const half_rows = visible_rows / 2
         if (Math.abs(row_offset) > half_rows) return
 
         const multiplier = calculateMultiplierC(col, row_offset)
