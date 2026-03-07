@@ -14,23 +14,23 @@
                 style="background: rgba(255,105,180,0.08); border: 1px solid rgba(212,96,154,0.25)"
             >
                 <div class="text-[11px] font-mono tracking-wider mb-1" style="color: rgba(255,255,255,0.4)">TOTAL BALANCE</div>
-                <div class="text-3xl font-bold font-mono" style="color: #ff69b4">$0.00</div>
-                <div class="text-[11px] font-mono mt-1" style="color: rgba(255,255,255,0.3)">0.0000 ETH</div>
+                <div class="text-3xl font-bold font-mono" style="color: #ff69b4">${{ game_store.balance.toFixed(2) }}</div>
+                <div class="text-[11px] font-mono mt-1" style="color: rgba(255,255,255,0.3)">{{ (game_store.total_pnl / 100).toFixed(2) }} P&amp;L</div>
             </div>
 
             <!-- Balance Breakdown -->
             <div class="flex gap-3 mb-6">
-                <!-- Game Balance -->
-                <div
-                    class="flex-1 rounded-xl p-4"
-                    style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.15)"
-                >
-                    <div class="flex items-center gap-2 mb-2">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
-                        <span class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">GAME</span>
+                    <!-- Game Balance -->
+                    <div
+                        class="flex-1 rounded-xl p-4"
+                        style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.15)"
+                    >
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
+                            <span class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">GAME</span>
+                        </div>
+                        <div class="text-lg font-bold font-mono" style="color: #e8e8ff">${{ game_store.balance.toFixed(2) }}</div>
                     </div>
-                    <div class="text-lg font-bold font-mono" style="color: #e8e8ff">$100.00</div>
-                </div>
 
                 <!-- On-Chain Balance -->
                 <div
@@ -74,12 +74,21 @@
 </template>
 
 <script setup lang="ts">
-const stats = [
-    { label: "Total Bets", value: "0" },
-    { label: "Wins", value: "0", color: "#22c55e" },
-    { label: "Losses", value: "0", color: "#ef4444" },
-    { label: "Win Rate", value: "0%", color: "#ff69b4" },
-    { label: "Best Streak", value: "0" },
-    { label: "Total P&L", value: "$0.00", color: "#ff69b4" },
-]
+const game_store = useGameStoreC()
+
+// Load balance if not already loaded
+onMounted(() => {
+    if (!game_store.balance_loaded) {
+        game_store.loadBalance()
+    }
+})
+
+const stats = computed(() => [
+    { label: "Total Bets", value: String(game_store.total_bets) },
+    { label: "Wins", value: String(game_store.total_wins), color: "#22c55e" },
+    { label: "Losses", value: String(game_store.total_losses), color: "#ef4444" },
+    { label: "Win Rate", value: `${game_store.win_rate}%`, color: "#ff69b4" },
+    { label: "Best Streak", value: String(game_store.best_streak) },
+    { label: "Total P&L", value: `$${(game_store.total_pnl / 100).toFixed(2)}`, color: game_store.total_pnl >= 0 ? "#22c55e" : "#ef4444" },
+])
 </script>

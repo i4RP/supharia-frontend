@@ -79,6 +79,10 @@ function resetAndRestart() {
 }
 
 onMounted(() => {
+    // Restore balance from on-chain + pending results
+    game_store.loadBalance()
+    // Start batch settlement timer (flushes results every 5s)
+    game_store.startSettlement()
     connect()
     nextTick(() => {
         start()
@@ -89,6 +93,8 @@ onMounted(() => {
 onUnmounted(() => {
     stop()
     disconnect()
+    // Stop batch settlement and flush remaining results
+    game_store.stopSettlement()
     window.removeEventListener("resize", handleResize)
 })
 </script>

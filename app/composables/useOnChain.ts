@@ -354,16 +354,32 @@ export function useOnChain() {
             abi: LEADERBOARD_ABI,
             functionName: "getPlayerStats",
             args: [player as `0x${string}`],
-        }) as [bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+        }) as Record<string, bigint> | bigint[]
 
+        // viem may return a named struct object or a positional tuple
+        const r = result as Record<string, bigint>
+        if (r.totalBets !== undefined) {
+            return {
+                totalBets: Number(r.totalBets),
+                wins: Number(r.wins),
+                losses: Number(r.losses),
+                pnl: Number(r.pnl),
+                bestStreak: Number(r.bestStreak),
+                currentStreak: Number(r.currentStreak),
+                lastPlayedAt: Number(r.lastPlayedAt),
+            }
+        }
+
+        // Fallback: positional tuple
+        const arr = result as bigint[]
         return {
-            totalBets: Number(result[0]),
-            wins: Number(result[1]),
-            losses: Number(result[2]),
-            pnl: Number(result[3]),
-            bestStreak: Number(result[4]),
-            currentStreak: Number(result[5]),
-            lastPlayedAt: Number(result[6]),
+            totalBets: Number(arr[0] ?? 0n),
+            wins: Number(arr[1] ?? 0n),
+            losses: Number(arr[2] ?? 0n),
+            pnl: Number(arr[3] ?? 0n),
+            bestStreak: Number(arr[4] ?? 0n),
+            currentStreak: Number(arr[5] ?? 0n),
+            lastPlayedAt: Number(arr[6] ?? 0n),
         }
     }
 
