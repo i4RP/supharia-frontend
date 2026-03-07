@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, http, parseAbi, formatUnits, parseEther } from "viem"
+import { createPublicClient, createWalletClient, http, parseAbi, formatUnits, parseEther, parseUnits } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import type { PublicClient, WalletClient, Account } from "viem"
 
@@ -42,6 +42,7 @@ const RUSD_ABI = parseAbi([
     "function approve(address spender, uint256 amount) returns (bool)",
     "function allowance(address owner, address spender) view returns (uint256)",
     "function faucet() returns (bool)",
+    "function transfer(address to, uint256 amount) returns (bool)",
 ])
 
 const LEADERBOARD_ABI = parseAbi([
@@ -369,6 +370,22 @@ export function useOnChain() {
         return hash
     }
 
+    /** Withdraw (send) rUSD tokens to a destination address */
+    async function withdrawRusd(to: string, amount: string): Promise<string> {
+        const { wallet, account } = getWalletClient()
+        const value = parseUnits(amount, 18)
+        const hash = await wallet.writeContract({
+            address: RUSD_ADDRESS,
+            abi: RUSD_ABI,
+            functionName: "transfer",
+            args: [to as `0x${string}`, value],
+            chain: megaETH,
+            account,
+        })
+        await client.waitForTransactionReceipt({ hash })
+        return hash
+    }
+
     /** Get a specific player's stats from leaderboard */
     async function fetchPlayerStats(player: string): Promise<PlayerStats> {
         const result = await client.readContract({
@@ -422,5 +439,6 @@ export function useOnChain() {
         fetchPlayerStats,
         fetchEthBalance,
         withdrawEth,
+        withdrawRusd,
     }
 }
