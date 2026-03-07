@@ -123,7 +123,26 @@ async function loadLeaderboard() {
     loading.value = true
     error.value = ""
     try {
-        leaderboard.value = await fetchLeaderboard()
+        const all = await fetchLeaderboard()
+        // Filter out dummy/test addresses (repeating hex patterns)
+        const DUMMY_ADDRESSES = new Set([
+            "0x1111111111111111111111111111111111111111",
+            "0x2222222222222222222222222222222222222222",
+            "0x3333333333333333333333333333333333333333",
+            "0x4444444444444444444444444444444444444444",
+            "0x5555555555555555555555555555555555555555",
+            "0x6666666666666666666666666666666666666666",
+            "0x7777777777777777777777777777777777777777",
+            "0x8888888888888888888888888888888888888888",
+            "0x9999999999999999999999999999999999999999",
+            "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "0xcccccccccccccccccccccccccccccccccccccccc",
+            "0xdddddddddddddddddddddddddddddddddddddd",
+            "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "0x0000000000000000000000000000000000000000",
+        ])
+        leaderboard.value = all.filter(p => !DUMMY_ADDRESSES.has(p.address.toLowerCase()))
     }
     catch (e) {
         console.error("[Ranking] Failed to load leaderboard:", e)
