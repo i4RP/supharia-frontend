@@ -10,7 +10,7 @@
         <!-- HUD Overlay (top left) -->
         <div class="absolute top-2 left-4 flex items-center gap-4 text-sm font-mono">
             <span class="text-white/60">
-                Price:
+                ETH:
                 <span class="text-white font-bold">${{ game_store.current_price.toFixed(2) }}</span>
             </span>
             <span class="text-white/60">

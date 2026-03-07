@@ -25,8 +25,13 @@ export const GAME_C_BALANCE = {
 } as const
 
 export const GAME_C_PRICE = {
-    BASE: 100,
+    BASE: 0, // Will be set from RedStone ETH/USD feed
     MAX_HISTORY: 3600,
+} as const
+
+export const GAME_C_LABELS = {
+    PRICE_LABEL_WIDTH: 70, // px reserved for price labels on right
+    TIME_LABEL_HEIGHT: 20, // px reserved for time labels on bottom
 } as const
 
 export function calculateMultiplierC(col: number, row_offset: number): number {
