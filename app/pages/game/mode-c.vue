@@ -1,5 +1,5 @@
 <template>
-    <div class="fixed inset-0 top-0 flex flex-col" style="background: #1a0a14">
+    <div class="absolute inset-0 top-0 flex flex-col" style="background: #1a0a14">
         <!-- Top Bar -->
         <div class="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 pt-[env(safe-area-inset-top,8px)] pb-1">
             <!-- ETH Price Pill -->
@@ -25,9 +25,6 @@
                     {{ game_store.is_connected ? "LIVE" : "OFFLINE" }}
                 </span>
                 <div class="flex items-center gap-1 px-2 py-1.5 rounded-full" style="background: rgba(30,15,25,0.9); border: 1px solid rgba(212,96,154,0.3)">
-                    <NuxtLink to="/game" class="p-1 text-white/60 hover:text-white transition-colors">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-                    </NuxtLink>
                     <button class="p-1 text-white/60 hover:text-white transition-colors" @click="resetAndRestart">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
                     </button>
@@ -58,27 +55,12 @@
             </div>
         </div>
 
-        <!-- Bottom Nav Bar -->
-        <div class="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-around py-2 pb-[env(safe-area-inset-bottom,8px)]" style="background: rgba(20,8,16,0.95); border-top: 1px solid rgba(212,96,154,0.2)">
-            <button class="flex flex-col items-center gap-0.5 p-2 rounded-xl" style="background: rgba(255,105,180,0.15)">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
-            </button>
-            <NuxtLink to="/game" class="flex flex-col items-center gap-0.5 p-2">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-            </NuxtLink>
-            <NuxtLink to="/game" class="flex flex-col items-center gap-0.5 p-2">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-            </NuxtLink>
-        </div>
+        <!-- Bottom nav is in parent game.vue -->
     </div>
 </template>
 
 <script setup lang="ts">
 import { GAME_C_BALANCE } from "~/constants/game_c"
-
-definePageMeta({
-    layout: "game",
-})
 
 const game_canvas = useTemplateRef<HTMLCanvasElement>("game_canvas")
 const game_store = useGameStoreC()
