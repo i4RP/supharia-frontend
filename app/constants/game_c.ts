@@ -21,6 +21,7 @@ export const GAME_C_GRID = {
     CELL_PRICE_STEP: 0.5,
     VISIBLE_COLS: 12,
     VISIBLE_ROWS: 20,
+    TARGET_ROWS: 12,
     CHART_HEAD_RATIO: 0.4,
 } as const
 

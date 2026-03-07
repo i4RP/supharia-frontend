@@ -13,12 +13,7 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
 
     let view_center = 0
 
-    /** Responsive: fewer columns on narrow screens */
-    function getVisibleCols(width: number): number {
-        if (width < 480) return 3
-        if (width < 768) return 5
-        return GAME_C_GRID.VISIBLE_COLS
-    }
+    const TARGET_ROWS = GAME_C_GRID.TARGET_ROWS
 
     function resizeCanvas() {
         const canvas = canvas_ref.value
@@ -56,17 +51,23 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
         if (full_width === 0 || full_height === 0) return
 
         const is_mobile = full_width < 480
-        const visible_cols = getVisibleCols(full_width)
         const price_label_w = is_mobile ? 55 : PRICE_LABEL_W
 
         // Reserve space for labels
         const grid_width = full_width - price_label_w
         const grid_height = full_height - TIME_LABEL_H
 
-        const chart_head_x = grid_width * GAME_C_GRID.CHART_HEAD_RATIO
         const now = Date.now()
 
-        const cell_width_px = (grid_width - chart_head_x) / visible_cols
+        // 方式2: cell_size from TARGET_ROWS, cols derived → perfect squares
+        const cell_size = grid_height / TARGET_ROWS
+        const base_chart_head_x = grid_width * GAME_C_GRID.CHART_HEAD_RATIO
+        const available_col_width = grid_width - base_chart_head_x
+        const visible_cols = Math.max(2, Math.min(GAME_C_GRID.VISIBLE_COLS, Math.floor(available_col_width / cell_size)))
+        // Absorb leftover pixels into chart_head_x so grid fills to the right edge
+        const chart_head_x = grid_width - visible_cols * cell_size
+
+        const cell_width_px = cell_size
         const px_per_ms = cell_width_px / SLOT_MS
 
         const actual_price = game_store.current_price
@@ -76,13 +77,12 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
             view_center += (actual_price - view_center) * SMOOTH_FACTOR
         }
 
-        // Dynamic visible rows so cells stay square (cell_height == cell_width)
-        const visible_rows = Math.max(4, Math.floor(grid_height / cell_width_px))
+        const visible_rows = TARGET_ROWS
         const half_rows = visible_rows / 2
         const price_range = visible_rows * STEP
         const price_top = view_center + half_rows * STEP
         const price_bottom = view_center - half_rows * STEP
-        const px_per_price = grid_height / price_range
+        const px_per_price = cell_size / STEP
 
         function priceToY(price: number): number {
             return grid_height / 2 - (price - view_center) * px_per_price
@@ -412,16 +412,19 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
 
         const { width: full_width, height: full_height } = getCssSize()
         const is_mobile = full_width < 480
-        const visible_cols = getVisibleCols(full_width)
         const price_label_w = is_mobile ? 55 : PRICE_LABEL_W
         const grid_width = full_width - price_label_w
         const grid_height = full_height - TIME_LABEL_H
-        const chart_head_x = grid_width * GAME_C_GRID.CHART_HEAD_RATIO
-        const cell_width_px = (grid_width - chart_head_x) / visible_cols
+        const cell_size = grid_height / TARGET_ROWS
+        const base_chart_head_x = grid_width * GAME_C_GRID.CHART_HEAD_RATIO
+        const available_col_width = grid_width - base_chart_head_x
+        const visible_cols = Math.max(2, Math.min(GAME_C_GRID.VISIBLE_COLS, Math.floor(available_col_width / cell_size)))
+        const chart_head_x = grid_width - visible_cols * cell_size
+        const cell_width_px = cell_size
         const px_per_ms = cell_width_px / SLOT_MS
-        const visible_rows = Math.max(4, Math.floor(grid_height / cell_width_px))
+        const visible_rows = TARGET_ROWS
         const price_range = visible_rows * STEP
-        const px_per_price = grid_height / price_range
+        const px_per_price = cell_size / STEP
 
         if (click_x < chart_head_x || click_x > grid_width) return
         if (click_y > grid_height) return
