@@ -13,6 +13,13 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
 
     let view_center = 0
 
+    /** Responsive: fewer columns on narrow screens */
+    function getVisibleCols(width: number): number {
+        if (width < 480) return 3
+        if (width < 768) return 5
+        return GAME_C_GRID.VISIBLE_COLS
+    }
+
     function resizeCanvas() {
         const canvas = canvas_ref.value
         if (!canvas) return
@@ -48,14 +55,18 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
         const { width: full_width, height: full_height } = getCssSize()
         if (full_width === 0 || full_height === 0) return
 
+        const is_mobile = full_width < 480
+        const visible_cols = getVisibleCols(full_width)
+        const price_label_w = is_mobile ? 55 : PRICE_LABEL_W
+
         // Reserve space for labels
-        const grid_width = full_width - PRICE_LABEL_W
+        const grid_width = full_width - price_label_w
         const grid_height = full_height - TIME_LABEL_H
 
         const chart_head_x = grid_width * GAME_C_GRID.CHART_HEAD_RATIO
         const now = Date.now()
 
-        const cell_width_px = (grid_width - chart_head_x) / GAME_C_GRID.VISIBLE_COLS
+        const cell_width_px = (grid_width - chart_head_x) / visible_cols
         const px_per_ms = cell_width_px / SLOT_MS
 
         const actual_price = game_store.current_price
@@ -95,7 +106,7 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
         // 2. Background grid (left of chart head)
         ctx.strokeStyle = GAME_C_COLORS.BACKGROUND_GRID
         ctx.lineWidth = 0.5
-        ctx.globalAlpha = 1.0
+        ctx.globalAlpha = 0.6
         for (let p = first_price_line; p <= last_price_line; p += STEP) {
             const y = priceToY(p)
             if (y < -1 || y > grid_height + 1) continue
@@ -105,10 +116,12 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
             ctx.stroke()
         }
 
+        ctx.globalAlpha = 1.0
+
         // 3. Scrolling order grid
         const first_future_slot = Math.ceil(now / SLOT_MS) * SLOT_MS
         const past_slots = Math.ceil(chart_head_x / cell_width_px) + 1
-        const total_slots = GAME_C_GRID.VISIBLE_COLS + past_slots + 2
+        const total_slots = visible_cols + past_slots + 2
 
         for (let i = 0; i < total_slots; i++) {
             const slot_time = first_future_slot - past_slots * SLOT_MS + i * SLOT_MS
@@ -121,7 +134,7 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
             if (alpha <= 0) continue
 
             // Vertical line at slot boundary
-            ctx.globalAlpha = alpha
+            ctx.globalAlpha = alpha * 0.4
             ctx.strokeStyle = GAME_C_COLORS.ORDER_GRID
             ctx.lineWidth = 0.5
             ctx.beginPath()
@@ -134,7 +147,7 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
             const seg_right = Math.min(col_end_x, grid_width)
             if (seg_left < seg_right) {
                 ctx.strokeStyle = GAME_C_COLORS.ORDER_GRID
-                ctx.globalAlpha = alpha
+                ctx.globalAlpha = alpha * 0.4
                 for (let p = first_price_line; p <= last_price_line; p += STEP) {
                     const y = priceToY(p)
                     if (y < -1 || y > grid_height + 1) continue
@@ -145,10 +158,24 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
                 }
             }
 
+            // Dots at grid intersections
+            if (col_x >= chart_head_x - cell_width_px) {
+                ctx.fillStyle = GAME_C_COLORS.GRID_DOT
+                ctx.globalAlpha = alpha * 0.5
+                for (let p = first_price_line; p <= last_price_line; p += STEP) {
+                    const y = priceToY(p)
+                    if (y < -1 || y > grid_height + 1) continue
+                    ctx.beginPath()
+                    ctx.arc(col_x, y, 1.5, 0, Math.PI * 2)
+                    ctx.fill()
+                }
+            }
+
             // Multiplier labels (only for future cells)
             const col_index = Math.round((slot_time - first_future_slot) / SLOT_MS)
-            if (col_x >= chart_head_x && col_index >= 0 && col_index < GAME_C_GRID.VISIBLE_COLS) {
-                ctx.font = "9px monospace"
+            if (col_x >= chart_head_x && col_index >= 0 && col_index < visible_cols) {
+                const font_size = is_mobile ? 11 : 9
+                ctx.font = `bold ${font_size}px monospace`
                 ctx.textAlign = "center"
                 ctx.textBaseline = "middle"
                 const cx = (col_x + col_end_x) / 2
@@ -160,9 +187,9 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
                     const cell_center_price = p + STEP / 2
                     const row_offset = Math.round((cell_center_price - view_center) / STEP)
                     const mult = calculateMultiplierC(col_index, row_offset)
-                    ctx.globalAlpha = alpha * 0.5
-                    ctx.fillStyle = GAME_C_COLORS.ORDER_GRID
-                    ctx.fillText(`${mult.toFixed(1)}x`, cx, cy)
+                    ctx.globalAlpha = alpha * 0.7
+                    ctx.fillStyle = GAME_C_COLORS.MULTIPLIER_TEXT
+                    ctx.fillText(`${mult.toFixed(1)}X`, cx, cy)
                 }
             }
         }
@@ -187,7 +214,7 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
             const radius = 4
 
             if (order.status === "active") {
-                ctx.globalAlpha = alpha
+                ctx.globalAlpha = alpha * 0.8
                 ctx.fillStyle = GAME_C_COLORS.ORDER_CELL
             } else if (order.status === "won") {
                 ctx.globalAlpha = Math.min(alpha, 0.7)
@@ -198,31 +225,44 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
             }
 
             ctx.beginPath()
-            ctx.roundRect(cell_x, cell_y, cell_w, cell_h, radius)
+            ctx.roundRect(cell_x + 1, cell_y + 1, cell_w - 2, cell_h - 2, radius)
             ctx.fill()
+
+            // Border glow for active cells
+            if (order.status === "active") {
+                ctx.globalAlpha = alpha * 0.4
+                ctx.strokeStyle = GAME_C_COLORS.ORDER_CELL
+                ctx.lineWidth = 1
+                ctx.beginPath()
+                ctx.roundRect(cell_x + 1, cell_y + 1, cell_w - 2, cell_h - 2, radius)
+                ctx.stroke()
+            }
 
             if (order.status === "active" && alpha > 0.5) {
                 ctx.globalAlpha = alpha
-                ctx.fillStyle = "#000000"
-                ctx.font = "bold 11px monospace"
+                ctx.fillStyle = "#ffffff"
+                ctx.font = is_mobile ? "bold 12px monospace" : "bold 11px monospace"
                 ctx.textAlign = "center"
                 ctx.textBaseline = "middle"
                 const cx = cell_x + cell_w / 2
                 const cy = cell_y + cell_h / 2
                 ctx.fillText(`$${GAME_C_BALANCE.BET_COST}`, cx, cy - 7)
-                ctx.font = "9px monospace"
+                ctx.font = is_mobile ? "10px monospace" : "9px monospace"
                 ctx.fillText(`${order.multiplier.toFixed(2)}x`, cx, cy + 7)
             }
 
             ctx.globalAlpha = 1.0
         }
 
-        // 6. Price line
+        // 6. Price line - trail in pink, head in white
         const history = game_store.getPriceHistory()
+        let last_x = chart_head_x
+        let last_y = grid_height / 2
         if (history.length > 1) {
-            ctx.strokeStyle = GAME_C_COLORS.PRICE_LINE
+            // Pink trail
+            ctx.strokeStyle = GAME_C_COLORS.PRICE_LINE_TRAIL
             ctx.lineWidth = 2
-            ctx.globalAlpha = 1.0
+            ctx.globalAlpha = 0.6
             ctx.beginPath()
             let started = false
             for (let i = 0; i < history.length; i++) {
@@ -237,14 +277,47 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
                 } else {
                     ctx.lineTo(x, y)
                 }
+                last_x = x
+                last_y = y
             }
             ctx.stroke()
+
+            // White leading portion (last ~3 seconds)
+            ctx.strokeStyle = GAME_C_COLORS.PRICE_LINE
+            ctx.lineWidth = 2.5
+            ctx.globalAlpha = 1.0
+            ctx.beginPath()
+            started = false
+            const white_start = now - 3000
+            for (let i = 0; i < history.length; i++) {
+                const point = history[i]
+                if (point.timestamp < white_start) continue
+                const x = timeToX(point.timestamp)
+                if (x > grid_width + 50) break
+                const y = priceToY(point.price)
+                if (!started) {
+                    ctx.moveTo(x, y)
+                    started = true
+                } else {
+                    ctx.lineTo(x, y)
+                }
+                last_x = x
+                last_y = y
+            }
+            ctx.stroke()
+
+            // White dot at chart head
+            ctx.fillStyle = GAME_C_COLORS.PRICE_LINE
+            ctx.globalAlpha = 1.0
+            ctx.beginPath()
+            ctx.arc(last_x, last_y, 4, 0, Math.PI * 2)
+            ctx.fill()
         }
 
-        // 7. Chart head marker
+        // 7. Chart head vertical marker
         ctx.strokeStyle = GAME_C_COLORS.CHART_HEAD
         ctx.lineWidth = 1
-        ctx.globalAlpha = 0.6
+        ctx.globalAlpha = 0.3
         ctx.setLineDash([4, 4])
         ctx.beginPath()
         ctx.moveTo(chart_head_x, 0)
@@ -253,61 +326,56 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
         ctx.setLineDash([])
         ctx.globalAlpha = 1.0
 
-        // Current price dot
-        const price_y = priceToY(actual_price)
-        ctx.fillStyle = GAME_C_COLORS.PRICE_LINE
-        ctx.beginPath()
-        ctx.arc(chart_head_x, price_y, 5, 0, Math.PI * 2)
-        ctx.fill()
-
-        // 8. Price labels (right side)
-        ctx.globalAlpha = 1.0
-        ctx.font = "10px monospace"
+        // 8. Price labels (right side) - pink text
+        const price_font_size = is_mobile ? 8 : 10
+        ctx.font = `${price_font_size}px monospace`
         ctx.textAlign = "left"
         ctx.textBaseline = "middle"
-        const label_x = grid_width + 6
-        for (let p = first_price_line; p <= last_price_line; p += STEP) {
+        const label_x = grid_width + 4
+        const label_step = is_mobile ? STEP * 2 : STEP
+        for (let p = first_price_line; p <= last_price_line; p += label_step) {
             const y = priceToY(p)
-            if (y < 0 || y > grid_height) continue
-            ctx.fillStyle = "rgba(255,255,255,0.35)"
+            if (y < 5 || y > grid_height - 5) continue
+            ctx.fillStyle = GAME_C_COLORS.PRICE_LABEL
+            ctx.globalAlpha = 0.5
             ctx.fillText(`$${p.toFixed(1)}`, label_x, y)
         }
 
         // Current price badge on right
         if (actual_price > 0) {
-            const badge_y = price_y
+            const badge_y = priceToY(actual_price)
             const badge_text = `$${actual_price.toFixed(1)}`
-            ctx.font = "bold 11px monospace"
-            const badge_w = ctx.measureText(badge_text).width + 12
-            const badge_h = 20
-            const badge_x = grid_width + 3
-            ctx.fillStyle = GAME_C_COLORS.PRICE_LINE
+            ctx.font = `bold ${is_mobile ? 9 : 11}px monospace`
+            const badge_w = ctx.measureText(badge_text).width + 10
+            const badge_h = is_mobile ? 16 : 20
+            const badge_x = grid_width + 2
+            ctx.globalAlpha = 1.0
+            ctx.fillStyle = GAME_C_COLORS.ORDER_CELL
             ctx.beginPath()
-            ctx.roundRect(badge_x, badge_y - badge_h / 2, badge_w, badge_h, 4)
+            ctx.roundRect(badge_x, badge_y - badge_h / 2, badge_w, badge_h, 3)
             ctx.fill()
             ctx.fillStyle = "#000000"
             ctx.textAlign = "left"
             ctx.textBaseline = "middle"
-            ctx.fillText(badge_text, badge_x + 6, badge_y)
+            ctx.fillText(badge_text, badge_x + 5, badge_y)
         }
 
-        // 9. Time labels (bottom)
-        ctx.globalAlpha = 1.0
-        ctx.font = "10px monospace"
+        // 9. Time labels (bottom) - pink text
+        ctx.globalAlpha = 0.5
+        ctx.font = `${is_mobile ? 8 : 10}px monospace`
         ctx.textAlign = "center"
         ctx.textBaseline = "top"
-        ctx.fillStyle = "rgba(255,255,255,0.35)"
+        ctx.fillStyle = GAME_C_COLORS.TIME_LABEL
         const time_y = grid_height + 4
-        // Show time at each slot boundary
         for (let i = 0; i < total_slots; i++) {
             const slot_time = first_future_slot - past_slots * SLOT_MS + i * SLOT_MS
             const x = timeToX(slot_time)
-            if (x < 0 || x > grid_width) continue
-            // Only show every 3rd label to avoid clutter
+            if (x < 30 || x > grid_width - 10) continue
             const slot_idx = Math.round(slot_time / SLOT_MS)
             if (slot_idx % 3 !== 0) continue
             ctx.fillText(formatTime(slot_time), x, time_y)
         }
+        ctx.globalAlpha = 1.0
     }
 
     function loop() {
@@ -341,10 +409,13 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
         const click_y = event.clientY - rect.top
 
         const { width: full_width, height: full_height } = getCssSize()
-        const grid_width = full_width - PRICE_LABEL_W
+        const is_mobile = full_width < 480
+        const visible_cols = getVisibleCols(full_width)
+        const price_label_w = is_mobile ? 55 : PRICE_LABEL_W
+        const grid_width = full_width - price_label_w
         const grid_height = full_height - TIME_LABEL_H
         const chart_head_x = grid_width * GAME_C_GRID.CHART_HEAD_RATIO
-        const px_per_ms = (grid_width - chart_head_x) / GAME_C_GRID.VISIBLE_COLS / SLOT_MS
+        const px_per_ms = (grid_width - chart_head_x) / visible_cols / SLOT_MS
         const price_range = GAME_C_GRID.VISIBLE_ROWS * STEP
         const px_per_price = grid_height / price_range
 
@@ -366,7 +437,7 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
         // Column index for multiplier
         const first_future_slot = Math.ceil(now / SLOT_MS) * SLOT_MS
         const col = Math.round((slot_start - first_future_slot) / SLOT_MS)
-        if (col < 0 || col >= GAME_C_GRID.VISIBLE_COLS) return
+        if (col < 0 || col >= visible_cols) return
 
         // Row offset from center price
         const cell_center_price = (cell_price_high + cell_price_low) / 2
