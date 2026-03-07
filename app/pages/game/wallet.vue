@@ -141,9 +141,16 @@
                     <div v-if="withdraw_status" class="mt-3 text-[11px] font-mono text-center" :style="{ color: withdraw_status_color }">
                         {{ withdraw_status }}
                     </div>
-                    <div v-if="withdraw_tx" class="mt-1 text-[10px] font-mono text-center truncate" style="color: rgba(255,255,255,0.3)">
+                    <a
+                        v-if="withdraw_tx"
+                        :href="`https://megaeth-testnet-v2.blockscout.com/tx/${withdraw_tx}`"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="mt-1 block text-[10px] font-mono text-center truncate underline"
+                        style="color: #ff69b4"
+                    >
                         TX: {{ withdraw_tx }}
-                    </div>
+                    </a>
                 </div>
             </div>
 
