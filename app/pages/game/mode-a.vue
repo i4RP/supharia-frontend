@@ -31,8 +31,14 @@
                 class="px-2 py-1 rounded-lg text-xs font-mono"
                 style="background: rgba(167,139,250,0.1); color: #A78BFA"
             >
-                DEV
+                ON-CHAIN
             </span>
+            <NuxtLink
+                to="/game"
+                class="px-3 py-1 rounded-lg bg-white/10 text-white/60 text-xs font-mono hover:bg-white/20 transition-colors"
+            >
+                BACK
+            </NuxtLink>
             <button
                 class="px-3 py-1 rounded-lg bg-white/10 text-white/60 text-xs font-mono hover:bg-white/20 transition-colors"
                 @click="resetAndRestart"
