@@ -1,2 +1,3 @@
-# supharia-frontend
-SUPHARIA Tap Trading - Frontend (Nuxt 3 + viem on-chain integration)
+# SUPHARIA Frontend
+
+Tap Trading game frontend built with Nuxt 3 + viem for MegaETH on-chain interaction.

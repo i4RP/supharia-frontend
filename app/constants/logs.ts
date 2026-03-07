@@ -1,0 +1,16 @@
+export const LOGS = {
+    SWAP_EXECUTED: "Swap executed",
+    LIQUIDITY_ADDED: "Liquidity added",
+    LIQUIDITY_REMOVED: "Liquidity removed",
+    POOL_CREATED: "New pool created",
+    WALLET_CONNECTED: "Wallet connected",
+    WALLET_DISCONNECTED: "Wallet disconnected",
+    BRIDGE_INITIATED: "Bridge transaction initiated",
+    REWARDS_HARVESTED: "Farming rewards harvested",
+    RATE_LIMIT_TRIGGERED: "Rate limit triggered",
+    GAME_STREAM_CONNECTED: "Game price stream connected",
+    GAME_STREAM_RECONNECTING: "Game price stream reconnecting",
+    GAME_ORDER_PLACED: "Game order placed",
+    GAME_ORDER_WON: "Game order won",
+    GAME_RESET: "Game reset",
+} as const
