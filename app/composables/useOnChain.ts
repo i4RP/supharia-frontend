@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, http, parseAbi, formatUnits } from "viem"
+import { createPublicClient, createWalletClient, http, parseAbi, formatUnits, parseEther } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import type { PublicClient, WalletClient, Account } from "viem"
 
@@ -358,14 +358,12 @@ export function useOnChain() {
     /** Withdraw (send) native ETH to a destination address */
     async function withdrawEth(to: string, amountEth: string): Promise<string> {
         const { wallet, account } = getWalletClient()
-        const value = BigInt(Math.floor(parseFloat(amountEth) * 1e18))
+        const value = parseEther(amountEth)
         const hash = await wallet.sendTransaction({
             to: to as `0x${string}`,
             value,
             chain: megaETH,
             account,
-            gas: BigInt(21_000),
-            gasPrice: BigInt(1_000_000),
         })
         await client.waitForTransactionReceipt({ hash })
         return hash
