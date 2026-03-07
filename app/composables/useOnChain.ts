@@ -347,6 +347,30 @@ export function useOnChain() {
         return hash
     }
 
+    /** Fetch native ETH balance for address */
+    async function fetchEthBalance(address?: string): Promise<string> {
+        const { account } = getWalletClient()
+        const addr = (address || account.address) as `0x${string}`
+        const bal = await client.getBalance({ address: addr })
+        return formatUnits(bal, 18)
+    }
+
+    /** Withdraw (send) native ETH to a destination address */
+    async function withdrawEth(to: string, amountEth: string): Promise<string> {
+        const { wallet, account } = getWalletClient()
+        const value = BigInt(Math.floor(parseFloat(amountEth) * 1e18))
+        const hash = await wallet.sendTransaction({
+            to: to as `0x${string}`,
+            value,
+            chain: megaETH,
+            account,
+            gas: BigInt(21_000),
+            gasPrice: BigInt(1_000_000),
+        })
+        await client.waitForTransactionReceipt({ hash })
+        return hash
+    }
+
     /** Get a specific player's stats from leaderboard */
     async function fetchPlayerStats(player: string): Promise<PlayerStats> {
         const result = await client.readContract({
@@ -398,5 +422,7 @@ export function useOnChain() {
         fetchLeaderboard,
         submitGameResult,
         fetchPlayerStats,
+        fetchEthBalance,
+        withdrawEth,
     }
 }

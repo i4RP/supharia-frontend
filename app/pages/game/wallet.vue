@@ -8,6 +8,27 @@
 
         <!-- Content -->
         <div class="flex-1 overflow-y-auto px-4 pb-[80px]">
+            <!-- Address Card -->
+            <div
+                class="rounded-2xl p-4 mb-4 flex items-center gap-3"
+                style="background: rgba(255,105,180,0.05); border: 1px solid rgba(212,96,154,0.2)"
+            >
+                <div class="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
+                    <img src="/megaeth-logo.jpg" alt="MegaETH" class="w-full h-full object-cover" />
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-[10px] font-mono tracking-wider mb-0.5" style="color: rgba(255,255,255,0.4)">MegaETH ADDRESS</div>
+                    <div class="text-[13px] font-mono truncate" style="color: #e8e8ff">{{ wallet_address }}</div>
+                </div>
+                <button
+                    class="flex-shrink-0 px-2.5 py-1.5 rounded-lg text-[10px] font-mono tracking-wider"
+                    style="background: rgba(255,105,180,0.15); color: #ff69b4; border: 1px solid rgba(212,96,154,0.3)"
+                    @click="copyAddress"
+                >
+                    {{ copy_label }}
+                </button>
+            </div>
+
             <!-- Total Balance Card -->
             <div
                 class="rounded-2xl p-5 mb-4"
@@ -20,28 +41,109 @@
 
             <!-- Balance Breakdown -->
             <div class="flex gap-3 mb-6">
-                    <!-- Game Balance -->
-                    <div
-                        class="flex-1 rounded-xl p-4"
-                        style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.15)"
-                    >
-                        <div class="flex items-center gap-2 mb-2">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
-                            <span class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">GAME</span>
-                        </div>
-                        <div class="text-lg font-bold font-mono" style="color: #e8e8ff">${{ game_store.balance.toFixed(2) }}</div>
-                    </div>
-
-                <!-- On-Chain Balance -->
+                <!-- Game Balance -->
                 <div
                     class="flex-1 rounded-xl p-4"
                     style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.15)"
                 >
                     <div class="flex items-center gap-2 mb-2">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 10H18a2 2 0 0 0 0 4h4" /></svg>
-                        <span class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">ON-CHAIN</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
+                        <span class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">GAME</span>
                     </div>
-                    <div class="text-lg font-bold font-mono" style="color: #e8e8ff">0.00 ETH</div>
+                    <div class="text-lg font-bold font-mono" style="color: #e8e8ff">${{ game_store.balance.toFixed(2) }}</div>
+                </div>
+
+                <!-- On-Chain ETH Balance -->
+                <div
+                    class="flex-1 rounded-xl p-4"
+                    style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.15)"
+                >
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-[14px] h-[14px] rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
+                            <img src="/megaeth-logo.jpg" alt="MegaETH" class="w-full h-full object-cover" />
+                        </div>
+                        <span class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">MegaETH ETH</span>
+                    </div>
+                    <div class="text-lg font-bold font-mono" style="color: #e8e8ff">{{ eth_display }} ETH</div>
+                </div>
+            </div>
+
+            <!-- Withdraw Section -->
+            <div class="mb-6">
+                <div class="text-[11px] font-mono tracking-wider mb-3" style="color: rgba(255,255,255,0.4)">WITHDRAW ETH</div>
+                <div
+                    class="rounded-xl p-4"
+                    style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.15)"
+                >
+                    <!-- Network badge -->
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-5 h-5 rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
+                            <img src="/megaeth-logo.jpg" alt="MegaETH" class="w-full h-full object-cover" />
+                        </div>
+                        <span class="text-[11px] font-mono" style="color: rgba(255,255,255,0.5)">MegaETH Testnet</span>
+                        <span class="text-[9px] font-mono px-1.5 py-0.5 rounded" style="background: rgba(255,105,180,0.15); color: #ff69b4">Ether</span>
+                    </div>
+
+                    <!-- Destination address input -->
+                    <div class="mb-3">
+                        <label class="text-[10px] font-mono tracking-wider block mb-1.5" style="color: rgba(255,255,255,0.35)">DESTINATION ADDRESS</label>
+                        <input
+                            v-model="withdraw_to"
+                            type="text"
+                            placeholder="0x..."
+                            class="w-full rounded-lg px-3 py-2.5 text-[13px] font-mono outline-none"
+                            style="background: rgba(0,0,0,0.3); border: 1px solid rgba(212,96,154,0.2); color: #e8e8ff"
+                            :disabled="withdraw_loading"
+                        />
+                    </div>
+
+                    <!-- Amount input -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.35)">AMOUNT (ETH)</label>
+                            <button
+                                class="text-[10px] font-mono"
+                                style="color: #ff69b4"
+                                @click="setMaxAmount"
+                            >
+                                MAX
+                            </button>
+                        </div>
+                        <input
+                            v-model="withdraw_amount"
+                            type="text"
+                            inputmode="decimal"
+                            placeholder="0.0"
+                            class="w-full rounded-lg px-3 py-2.5 text-[13px] font-mono outline-none"
+                            style="background: rgba(0,0,0,0.3); border: 1px solid rgba(212,96,154,0.2); color: #e8e8ff"
+                            :disabled="withdraw_loading"
+                        />
+                        <div class="text-[10px] font-mono mt-1" style="color: rgba(255,255,255,0.25)">
+                            Available: {{ eth_display }} ETH on MegaETH
+                        </div>
+                    </div>
+
+                    <!-- Withdraw button -->
+                    <button
+                        class="w-full py-3 rounded-xl text-[13px] font-bold font-mono tracking-wider transition-all"
+                        :style="withdraw_button_style"
+                        :disabled="!can_withdraw || withdraw_loading"
+                        @click="handleWithdraw"
+                    >
+                        <span v-if="withdraw_loading" class="flex items-center justify-center gap-2">
+                            <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4m-3.93 7.07l-2.83-2.83M7.76 7.76L4.93 4.93" /></svg>
+                            PROCESSING...
+                        </span>
+                        <span v-else>WITHDRAW ETH</span>
+                    </button>
+
+                    <!-- Status message -->
+                    <div v-if="withdraw_status" class="mt-3 text-[11px] font-mono text-center" :style="{ color: withdraw_status_color }">
+                        {{ withdraw_status }}
+                    </div>
+                    <div v-if="withdraw_tx" class="mt-1 text-[10px] font-mono text-center truncate" style="color: rgba(255,255,255,0.3)">
+                        TX: {{ withdraw_tx }}
+                    </div>
                 </div>
             </div>
 
@@ -75,13 +177,102 @@
 
 <script setup lang="ts">
 const game_store = useGameStoreC()
+const { getAddress, fetchEthBalance, withdrawEth } = useOnChain()
+
+// Wallet address
+const wallet_address = ref("")
+const copy_label = ref("COPY")
+
+// ETH balance
+const eth_balance = ref("0")
+const eth_display = computed(() => {
+    const val = parseFloat(eth_balance.value)
+    if (isNaN(val)) return "0.0000"
+    return val.toFixed(4)
+})
+
+// Withdraw state
+const withdraw_to = ref("")
+const withdraw_amount = ref("")
+const withdraw_loading = ref(false)
+const withdraw_status = ref("")
+const withdraw_status_color = ref("#22c55e")
+const withdraw_tx = ref("")
+
+const can_withdraw = computed(() => {
+    if (!withdraw_to.value || !withdraw_amount.value) return false
+    if (!withdraw_to.value.startsWith("0x") || withdraw_to.value.length !== 42) return false
+    const amt = parseFloat(withdraw_amount.value)
+    if (isNaN(amt) || amt <= 0) return false
+    if (amt > parseFloat(eth_balance.value)) return false
+    return true
+})
+
+const withdraw_button_style = computed(() => {
+    if (withdraw_loading.value) {
+        return "background: rgba(255,105,180,0.2); color: rgba(255,105,180,0.6); cursor: wait"
+    }
+    if (!can_withdraw.value) {
+        return "background: rgba(255,105,180,0.1); color: rgba(255,105,180,0.3); cursor: not-allowed"
+    }
+    return "background: rgba(255,105,180,0.25); color: #ff69b4; border: 1px solid rgba(212,96,154,0.4); cursor: pointer"
+})
 
 // Load balance if not already loaded
-onMounted(() => {
+onMounted(async () => {
     if (!game_store.balance_loaded) {
         game_store.loadBalance()
     }
+    try {
+        wallet_address.value = getAddress()
+        eth_balance.value = await fetchEthBalance()
+    }
+    catch (e) {
+        console.warn("[Wallet] Failed to load ETH balance:", e)
+    }
 })
+
+function copyAddress() {
+    if (!wallet_address.value) return
+    navigator.clipboard.writeText(wallet_address.value).then(() => {
+        copy_label.value = "COPIED!"
+        setTimeout(() => { copy_label.value = "COPY" }, 2000)
+    }).catch(() => {
+        copy_label.value = "COPY"
+    })
+}
+
+function setMaxAmount() {
+    const bal = parseFloat(eth_balance.value)
+    if (isNaN(bal) || bal <= 0) return
+    // Leave a small amount for gas
+    const maxSend = Math.max(0, bal - 0.0001)
+    withdraw_amount.value = maxSend.toFixed(6)
+}
+
+async function handleWithdraw() {
+    if (!can_withdraw.value || withdraw_loading.value) return
+    withdraw_loading.value = true
+    withdraw_status.value = ""
+    withdraw_tx.value = ""
+    try {
+        const hash = await withdrawEth(withdraw_to.value, withdraw_amount.value)
+        withdraw_tx.value = hash
+        withdraw_status.value = "Withdrawal successful!"
+        withdraw_status_color.value = "#22c55e"
+        // Refresh balance
+        eth_balance.value = await fetchEthBalance()
+        withdraw_amount.value = ""
+    }
+    catch (e: unknown) {
+        const errMsg = e instanceof Error ? e.message : String(e)
+        withdraw_status.value = "Failed: " + errMsg.slice(0, 80)
+        withdraw_status_color.value = "#ef4444"
+    }
+    finally {
+        withdraw_loading.value = false
+    }
+}
 
 const stats = computed(() => [
     { label: "Total Bets", value: String(game_store.total_bets) },
