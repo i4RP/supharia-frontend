@@ -45,22 +45,35 @@ export function useGameStream() {
 
     async function pollSettlements() {
         try {
-            // Check pending orders for settlement
             const current_orders = game_store.orders
             for (const order of current_orders) {
                 if (order.status !== "settling") continue
-                // Check if bet settled on-chain
                 const bet_id = Number(order.id.replace("bet_", ""))
-                if (isNaN(bet_id)) continue
+                if (isNaN(bet_id) || bet_id < 0) continue
+
                 const bet = await onchain.fetchBet(bet_id)
                 if (bet.settled) {
+                    // Already settled on-chain — update UI
                     game_store.applySettlements([{
                         id: order.id,
                         status: bet.won ? "won" : "lost",
                     }])
-                    // Refresh balance after settlement
                     const bal = await onchain.fetchRusdBalance()
                     game_store.updateBalance(bal)
+                } else if (Date.now() > bet.timeEnd) {
+                    // Expired but not settled — trigger settlement from frontend
+                    try {
+                        await onchain.settleBet(bet_id)
+                        // Re-fetch to get result
+                        const settled = await onchain.fetchBet(bet_id)
+                        game_store.applySettlements([{
+                            id: order.id,
+                            status: settled.won ? "won" : "lost",
+                        }])
+                        const bal = await onchain.fetchRusdBalance()
+                        game_store.updateBalance(bal)
+                    }
+                    catch { /* keeper may settle it instead */ }
                 }
             }
         }

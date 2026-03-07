@@ -346,7 +346,8 @@ export function useGameCanvas(canvas_ref: Ref<HTMLCanvasElement | null>) {
             // Update balance from chain
             const bal = await onchain.fetchRusdBalance()
             game_store.updateBalance(bal)
-        }).catch(() => {
+        }).catch((err) => {
+            console.error("placeBet failed:", err)
             // Revert optimistic update on failure
             game_store.orders = game_store.orders.filter((o) => o.id !== temp_id)
         })

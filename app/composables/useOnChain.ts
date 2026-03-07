@@ -159,10 +159,10 @@ export function useOnChain() {
                 address: RUSD_ADDRESS,
                 abi: RUSD_ABI,
                 functionName: "approve",
-                args: [POOL_ADDRESS, BigInt(2 ** 255)],
+                args: [POOL_ADDRESS, (BigInt(1) << BigInt(255)) - BigInt(1)],
                 chain: megaETH,
                 account,
-                gas: BigInt(100_000),
+                gas: BigInt(200_000),
                 gasPrice: BigInt(1_000_000),
             })
             await client.waitForTransactionReceipt({ hash })
@@ -263,6 +263,23 @@ export function useOnChain() {
         return account.address
     }
 
+    /** Settle a bet on-chain (anyone can call after expiry) */
+    async function settleBet(betId: number): Promise<string> {
+        const { wallet, account } = getWalletClient()
+        const hash = await wallet.writeContract({
+            address: POOL_ADDRESS,
+            abi: POOL_ABI,
+            functionName: "settleBet",
+            args: [BigInt(betId)],
+            chain: megaETH,
+            account,
+            gas: BigInt(300_000),
+            gasPrice: BigInt(1_000_000),
+        })
+        await client.waitForTransactionReceipt({ hash })
+        return hash
+    }
+
     return {
         fetchPrice,
         fetchGrid,
@@ -270,6 +287,7 @@ export function useOnChain() {
         fetchRusdBalance,
         placeBet,
         fetchBet,
+        settleBet,
         claimFaucet,
         fetchPoolBalance,
         getAddress,
