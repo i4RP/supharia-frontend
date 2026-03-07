@@ -14,6 +14,7 @@ const megaETH = {
 
 const POOL_ADDRESS = "0x627B45ad772f4069542D2CA08E320e3e7dA582cD" as const
 const RUSD_ADDRESS = "0x48345110dB117682E5a4EBdD99919Aff5b872D43" as const
+const LEADERBOARD_ADDRESS = "0x3feb68cab679d87fef08276a7897d929aafcb7c5" as const
 const DEV_PRIVATE_KEY = "0xfa9ca47a819eab83f48e91b88af74c4b48a9205cbb16887d3d49becd1c3186f4" as const
 
 // Minimal ABIs for the contracts we interact with
@@ -43,11 +44,37 @@ const RUSD_ABI = parseAbi([
     "function faucet() returns (bool)",
 ])
 
+const LEADERBOARD_ABI = parseAbi([
+    "function submitResult(address player, bool won, int256 pnlDelta)",
+    "function getLeaderboard() view returns (address[] addrs, int256[] pnls, uint256[] totalBets, uint256[] winCounts)",
+    "function getPlayerStats(address player) view returns ((uint256 totalBets, uint256 wins, uint256 losses, int256 pnl, uint256 bestStreak, uint256 currentStreak, uint256 lastPlayedAt))",
+    "function playerCount() view returns (uint256)",
+    "event GameResult(address indexed player, bool won, int256 pnlDelta, uint256 timestamp)",
+])
+
 export interface OnChainGrid {
     multipliers: number[][] // [row][col] as float (e.g., 3.88)
     priceLows: number[] // [row] in USD
     priceHighs: number[] // [row] in USD
     timeEnds: number[] // [col] as unix timestamp ms
+}
+
+export interface LeaderboardEntry {
+    address: string
+    pnl: number       // in cents (e.g., 12050 = $120.50)
+    totalBets: number
+    wins: number
+    winRate: number    // percentage
+}
+
+export interface PlayerStats {
+    totalBets: number
+    wins: number
+    losses: number
+    pnl: number
+    bestStreak: number
+    currentStreak: number
+    lastPlayedAt: number
 }
 
 export interface OnChainBet {
@@ -280,6 +307,66 @@ export function useOnChain() {
         return hash
     }
 
+    // ============ Leaderboard Functions ============
+
+    /** Fetch on-chain leaderboard sorted by PnL */
+    async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
+        const [addrs, pnls, totalBets, winCounts] = await client.readContract({
+            address: LEADERBOARD_ADDRESS,
+            abi: LEADERBOARD_ABI,
+            functionName: "getLeaderboard",
+        }) as [string[], bigint[], bigint[], bigint[]]
+
+        return addrs.map((addr: string, i: number) => {
+            const bets = Number(totalBets[i])
+            const wins = Number(winCounts[i])
+            return {
+                address: addr,
+                pnl: Number(pnls[i]),
+                totalBets: bets,
+                wins,
+                winRate: bets > 0 ? Math.round((wins / bets) * 100) : 0,
+            }
+        })
+    }
+
+    /** Submit a game result to the on-chain leaderboard */
+    async function submitGameResult(player: string, won: boolean, pnlDelta: number): Promise<string> {
+        const { wallet, account } = getWalletClient()
+        const hash = await wallet.writeContract({
+            address: LEADERBOARD_ADDRESS,
+            abi: LEADERBOARD_ABI,
+            functionName: "submitResult",
+            args: [player as `0x${string}`, won, BigInt(Math.round(pnlDelta))],
+            chain: megaETH,
+            account,
+            gas: BigInt(500_000),
+            gasPrice: BigInt(1_000_000),
+        })
+        await client.waitForTransactionReceipt({ hash })
+        return hash
+    }
+
+    /** Get a specific player's stats from leaderboard */
+    async function fetchPlayerStats(player: string): Promise<PlayerStats> {
+        const result = await client.readContract({
+            address: LEADERBOARD_ADDRESS,
+            abi: LEADERBOARD_ABI,
+            functionName: "getPlayerStats",
+            args: [player as `0x${string}`],
+        }) as [bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+
+        return {
+            totalBets: Number(result[0]),
+            wins: Number(result[1]),
+            losses: Number(result[2]),
+            pnl: Number(result[3]),
+            bestStreak: Number(result[4]),
+            currentStreak: Number(result[5]),
+            lastPlayedAt: Number(result[6]),
+        }
+    }
+
     return {
         fetchPrice,
         fetchGrid,
@@ -292,5 +379,8 @@ export function useOnChain() {
         fetchPoolBalance,
         getAddress,
         ensureApproval,
+        fetchLeaderboard,
+        submitGameResult,
+        fetchPlayerStats,
     }
 }

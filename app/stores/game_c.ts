@@ -1,6 +1,7 @@
 import { defineStore } from "pinia"
 import { GAME_C_BALANCE, GAME_C_PRICE } from "~/constants/game_c"
 import type { GameOrder, PricePoint } from "~/types/game"
+import { useOnChain } from "~/composables/useOnChain"
 
 export const useGameStoreC = defineStore("game_c", () => {
     // Non-reactive buffer for high-frequency price data (read only in rAF)
@@ -14,6 +15,34 @@ export const useGameStoreC = defineStore("game_c", () => {
     const game_start_time = ref(0)
 
     let order_counter = 0
+
+    // On-chain leaderboard: queue results to submit asynchronously
+    let _submitting = false
+    const _resultQueue: { won: boolean; pnlDelta: number }[] = []
+
+    function _flushResultQueue() {
+        if (_submitting || _resultQueue.length === 0) return
+        _submitting = true
+        const batch = _resultQueue.splice(0, _resultQueue.length)
+
+        const { submitGameResult, getAddress } = useOnChain()
+        const addr = getAddress()
+
+        // Submit each result sequentially (fire-and-forget)
+        ;(async () => {
+            for (const r of batch) {
+                try {
+                    await submitGameResult(addr, r.won, r.pnlDelta)
+                }
+                catch (e) {
+                    console.warn("[Leaderboard] submit failed:", e)
+                }
+            }
+            _submitting = false
+            // Flush again if more results queued during submission
+            _flushResultQueue()
+        })()
+    }
 
     function addPricePoint(point: PricePoint) {
         price_buffer.push(point)
@@ -44,14 +73,21 @@ export const useGameStoreC = defineStore("game_c", () => {
             if (now > order.cell.time_end) {
                 order.status = "expired"
                 changed = true
+                // Submit loss to on-chain leaderboard
+                const pnlCents = Math.round(-order.cost * 100)
+                _resultQueue.push({ won: false, pnlDelta: pnlCents })
                 continue
             }
 
             if (now >= order.cell.time_start && now <= order.cell.time_end) {
                 if (current_price.value >= order.cell.price_low && current_price.value <= order.cell.price_high) {
                     order.status = "won"
-                    balance.value += order.cost * order.multiplier
+                    const payout = order.cost * order.multiplier
+                    balance.value += payout
                     changed = true
+                    // Submit win to on-chain leaderboard (profit = payout - cost)
+                    const profitCents = Math.round((payout - order.cost) * 100)
+                    _resultQueue.push({ won: true, pnlDelta: profitCents })
                 }
             }
         }
@@ -59,6 +95,8 @@ export const useGameStoreC = defineStore("game_c", () => {
             // Prune orders that are off-screen (expired/lost older than 10s)
             const cutoff = now - 10000
             orders.value = current_list.filter((o) => o.status === "active" || o.cell.time_end > cutoff)
+            // Flush queued results to on-chain leaderboard
+            _flushResultQueue()
         }
     }
 
