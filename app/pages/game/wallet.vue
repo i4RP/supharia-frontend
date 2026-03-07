@@ -50,7 +50,7 @@
                         <div class="w-[14px] h-[14px] rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
                             <img src="/megaeth-logo.jpg" alt="MegaETH" class="w-full h-full object-cover" />
                         </div>
-                        <span class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">MegaETH USD</span>
+                        <span class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">MegaETH <a href="https://megaeth-testnet-v2.blockscout.com/address/0x48345110dB117682E5a4EBdD99919Aff5b872D43" target="_blank" rel="noopener noreferrer" class="underline" style="color: #ff69b4">rUSD</a></span>
                     </div>
                     <div class="text-lg font-bold font-mono" style="color: #e8e8ff">${{ game_store.balance.toFixed(2) }}</div>
                 </div>
