@@ -34,7 +34,7 @@
                 class="rounded-2xl p-5 mb-4"
                 style="background: rgba(255,105,180,0.08); border: 1px solid rgba(212,96,154,0.25)"
             >
-                <div class="flex items-center justify-between mb-1">
+                <div class="flex items-center gap-2 mb-1">
                     <span class="text-[11px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">GAME SCORE</span>
                     <a
                         href="https://megaeth-testnet-v2.blockscout.com/address/0x3feb68cab679d87fef08276a7897d929aafcb7c5"
