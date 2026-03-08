@@ -1,12 +1,12 @@
-import { privateKeyToAccount } from "viem/accounts"
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts"
 
 const STORAGE_KEY = "supharia_wallets"
 const ACTIVE_KEY = "supharia_active_wallet"
 
 export interface WalletEntry {
-    label: string          // user-given name or auto-generated
-    address: string        // derived from private key
-    privateKey: string     // hex string with 0x prefix
+    label: string // user-given name or auto-generated
+    address: string // derived from private key
+    privateKey: string // hex string with 0x prefix
 }
 
 // Module-level reactive state (shared across all consumers)
@@ -19,8 +19,9 @@ function _save(): void {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(_wallets.value))
         localStorage.setItem(ACTIVE_KEY, String(_activeIndex.value))
+    } catch {
+        /* quota exceeded */
     }
-    catch { /* quota exceeded */ }
 }
 
 function _load(): void {
@@ -37,11 +38,13 @@ function _load(): void {
                 return
             }
         }
+    } catch {
+        /* corrupt data */
     }
-    catch { /* corrupt data */ }
 
-    // No saved wallets — seed with the dev wallet from runtime config
-    _seedDevWallet()
+    // No saved wallets — start with empty state (user chooses new or sample)
+    _wallets.value = []
+    _activeIndex.value = 0
     _initialized.value = true
 }
 
@@ -53,21 +56,25 @@ function _seedDevWallet(): void {
             if (config.public?.devPrivateKey) {
                 pk = config.public.devPrivateKey as string
             }
+        } catch {
+            /* SSR */
         }
-        catch { /* SSR */ }
     }
     if (pk && pk !== "0x0") {
         try {
             const account = privateKeyToAccount(pk as `0x${string}`)
-            _wallets.value = [{
-                label: "Default",
-                address: account.address,
-                privateKey: pk,
-            }]
+            _wallets.value = [
+                {
+                    label: "Default",
+                    address: account.address,
+                    privateKey: pk,
+                },
+            ]
             _activeIndex.value = 0
             _save()
+        } catch {
+            /* invalid key */
         }
-        catch { /* invalid key */ }
     }
 }
 
@@ -93,7 +100,7 @@ export function useWalletManager() {
         const address = account.address
 
         // Check for duplicates
-        if (_wallets.value.some(w => w.address.toLowerCase() === address.toLowerCase())) {
+        if (_wallets.value.some((w) => w.address.toLowerCase() === address.toLowerCase())) {
             throw new Error("Wallet already exists")
         }
 
@@ -108,15 +115,14 @@ export function useWalletManager() {
     }
 
     /**
-     * Remove a wallet by index. Cannot remove the last wallet.
+     * Remove a wallet by index. Allows removing the last wallet (results in empty state).
      */
     function removeWallet(index: number): void {
-        if (_wallets.value.length <= 1) {
-            throw new Error("Cannot remove last wallet")
-        }
         if (index < 0 || index >= _wallets.value.length) return
         _wallets.value = _wallets.value.filter((_, i) => i !== index)
-        if (_activeIndex.value >= _wallets.value.length) {
+        if (_wallets.value.length === 0) {
+            _activeIndex.value = 0
+        } else if (_activeIndex.value >= _wallets.value.length) {
             _activeIndex.value = _wallets.value.length - 1
         }
         _save()
@@ -151,14 +157,62 @@ export function useWalletManager() {
         _save()
     }
 
+    /**
+     * Generate a brand-new wallet keypair (does not add it).
+     * UI should show the private key first, then call addWallet() when user confirms.
+     */
+    function createNewWallet(): { privateKey: string; address: string } {
+        const pk = generatePrivateKey()
+        const account = privateKeyToAccount(pk)
+        return { privateKey: pk, address: account.address }
+    }
+
+    /**
+     * Set the sample (dev) wallet from runtime config.
+     */
+    function setSampleWallet(): string {
+        let pk = "0x0" as string
+        if (typeof useRuntimeConfig !== "undefined") {
+            try {
+                const config = useRuntimeConfig()
+                if (config.public?.devPrivateKey) {
+                    pk = config.public.devPrivateKey as string
+                }
+            } catch {
+                /* SSR */
+            }
+        }
+        if (!pk || pk === "0x0") throw new Error("Sample wallet not available")
+        const account = privateKeyToAccount(pk as `0x${string}`)
+        // Check duplicate
+        if (_wallets.value.some((w) => w.address.toLowerCase() === account.address.toLowerCase())) {
+            throw new Error("Wallet already exists")
+        }
+        const entry: WalletEntry = {
+            label: "Sample Wallet",
+            address: account.address,
+            privateKey: pk,
+        }
+        _wallets.value = [..._wallets.value, entry]
+        _activeIndex.value = _wallets.value.length - 1
+        _save()
+        return account.address
+    }
+
+    /** Whether any wallets exist */
+    const hasWallets = computed(() => _wallets.value.length > 0)
+
     return {
         wallets,
         activeIndex,
         activeWallet,
+        hasWallets,
         addWallet,
         removeWallet,
         switchWallet,
         getActivePrivateKey,
         renameWallet,
+        createNewWallet,
+        setSampleWallet,
     }
 }

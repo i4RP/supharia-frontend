@@ -1,6 +1,6 @@
-import { createPublicClient, createWalletClient, http, parseAbi, formatUnits, parseEther, parseUnits } from "viem"
+import type { Account, PublicClient, WalletClient } from "viem"
+import { createPublicClient, createWalletClient, formatUnits, http, parseAbi, parseEther, parseUnits } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
-import type { PublicClient, WalletClient, Account } from "viem"
 import { useWalletManager } from "~/composables/useWalletManager"
 
 // MegaETH testnet chain definition
@@ -21,8 +21,7 @@ function getActivePrivateKey(): `0x${string}` {
     try {
         const { getActivePrivateKey: getPK } = useWalletManager()
         return getPK()
-    }
-    catch {
+    } catch {
         // Fallback to runtime config if wallet manager not available
         if (typeof useRuntimeConfig !== "undefined") {
             const config = useRuntimeConfig()
@@ -83,12 +82,12 @@ export interface OnChainGrid {
 
 export interface LeaderboardEntry {
     address: string
-    pnl: number       // in cents (e.g., 12050 = $120.50)
+    pnl: number // in cents (e.g., 12050 = $120.50)
     totalBets: number
     wins: number
-    winRate: number    // percentage
+    winRate: number // percentage
     rewardRusd: number // cumulative rUSD rewards (float, e.g. 5.0)
-    rewardEth: number  // cumulative ETH rewards (float, e.g. 0.0001)
+    rewardEth: number // cumulative ETH rewards (float, e.g. 0.0001)
 }
 
 export interface PlayerStats {
@@ -130,6 +129,9 @@ function getPublicClient(): PublicClient {
 
 function getWalletClient(): { wallet: WalletClient; account: Account } {
     const pk = getActivePrivateKey()
+    if (!pk || pk === "0x0") {
+        throw new Error("No active wallet")
+    }
     // Recreate wallet client if private key changed (wallet switch)
     if (!_walletClient || !_account || _lastPrivateKey !== pk) {
         _account = privateKeyToAccount(pk)
@@ -165,16 +167,14 @@ export function useOnChain() {
 
     /** Fetch the 9×3 grid of multipliers from contract */
     async function fetchGrid(): Promise<OnChainGrid> {
-        const [multipliers, priceLows, priceHighs, timeEnds] = await client.readContract({
+        const [multipliers, priceLows, priceHighs, timeEnds] = (await client.readContract({
             address: POOL_ADDRESS,
             abi: POOL_ABI,
             functionName: "getGrid",
-        }) as [bigint[][], bigint[], bigint[], bigint[]]
+        })) as [bigint[][], bigint[], bigint[], bigint[]]
 
         return {
-            multipliers: multipliers.map((row: bigint[]) =>
-                row.map((m: bigint) => Number(formatUnits(m, 18))),
-            ),
+            multipliers: multipliers.map((row: bigint[]) => row.map((m: bigint) => Number(formatUnits(m, 18)))),
             priceLows: priceLows.map((p: bigint) => Number(formatUnits(p, 18))),
             priceHighs: priceHighs.map((p: bigint) => Number(formatUnits(p, 18))),
             timeEnds: timeEnds.map((t: bigint) => Number(t) * 1000), // to ms
@@ -194,26 +194,31 @@ export function useOnChain() {
 
     /** Get user's rUSD balance */
     async function fetchRusdBalance(address?: string): Promise<number> {
-        const { account } = getWalletClient()
-        const addr = (address || account.address) as `0x${string}`
-        const bal = await client.readContract({
-            address: RUSD_ADDRESS,
-            abi: RUSD_ABI,
-            functionName: "balanceOf",
-            args: [addr],
-        })
-        return Number(formatUnits(bal as bigint, 18))
+        try {
+            const { account } = getWalletClient()
+            const addr = (address || account.address) as `0x${string}`
+            const bal = await client.readContract({
+                address: RUSD_ADDRESS,
+                abi: RUSD_ABI,
+                functionName: "balanceOf",
+                args: [addr],
+            })
+            return Number(formatUnits(bal as bigint, 18))
+        }
+        catch {
+            return 0
+        }
     }
 
     /** Ensure rUSD is approved for pool spending */
     async function ensureApproval(): Promise<void> {
         const { wallet, account } = getWalletClient()
-        const allowance = await client.readContract({
+        const allowance = (await client.readContract({
             address: RUSD_ADDRESS,
             abi: RUSD_ABI,
             functionName: "allowance",
             args: [account.address, POOL_ADDRESS],
-        }) as bigint
+        })) as bigint
 
         // Approve max if not enough
         if (allowance < BigInt(1000) * BigInt(10 ** 18)) {
@@ -256,16 +261,17 @@ export function useOnChain() {
                 if (log.topics[0] === "0x" + "a1c7a31c" /* partial */) {
                     // Better to just read nextBetId - 1
                 }
+            } catch {
+                /* ignore */
             }
-            catch { /* ignore */ }
         }
 
         // Read the latest betId
-        const nextId = await client.readContract({
+        const nextId = (await client.readContract({
             address: POOL_ADDRESS,
             abi: POOL_ABI,
             functionName: "nextBetId",
-        }) as bigint
+        })) as bigint
         betId = Number(nextId) - 1
 
         return { betId, txHash: hash }
@@ -273,12 +279,12 @@ export function useOnChain() {
 
     /** Get a bet's details */
     async function fetchBet(betId: number): Promise<OnChainBet> {
-        const bet = await client.readContract({
+        const bet = (await client.readContract({
             address: POOL_ADDRESS,
             abi: POOL_ABI,
             functionName: "getBet",
             args: [BigInt(betId)],
-        }) as [string, bigint, bigint, bigint, bigint, bigint, boolean, boolean]
+        })) as [string, bigint, bigint, bigint, bigint, bigint, boolean, boolean]
 
         return {
             id: betId,
@@ -346,11 +352,11 @@ export function useOnChain() {
 
     /** Fetch on-chain leaderboard sorted by PnL */
     async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
-        const [addrs, pnls, totalBets, winCounts, rewardRusd, rewardEth] = await client.readContract({
+        const [addrs, pnls, totalBets, winCounts, rewardRusd, rewardEth] = (await client.readContract({
             address: LEADERBOARD_ADDRESS,
             abi: LEADERBOARD_ABI,
             functionName: "getLeaderboard",
-        }) as [string[], bigint[], bigint[], bigint[], bigint[], bigint[]]
+        })) as [string[], bigint[], bigint[], bigint[], bigint[], bigint[]]
 
         return addrs.map((addr: string, i: number) => {
             const bets = Number(totalBets[i])
@@ -386,12 +392,12 @@ export function useOnChain() {
 
     /** Fetch player stats including reward totals */
     async function fetchPlayerRewards(player: string): Promise<{ rewardRusd: number; rewardEth: number }> {
-        const result = await client.readContract({
+        const result = (await client.readContract({
             address: LEADERBOARD_ADDRESS,
             abi: LEADERBOARD_ABI,
             functionName: "getPlayerStats",
             args: [player as `0x${string}`],
-        }) as Record<string, bigint> | bigint[]
+        })) as Record<string, bigint> | bigint[]
 
         const r = result as Record<string, bigint>
         if (r.totalRewardRusd !== undefined) {
@@ -449,12 +455,12 @@ export function useOnChain() {
     async function purchaseCreditsWithRusd(): Promise<string> {
         const { wallet, account } = getWalletClient()
         // Ensure rUSD is approved for Leaderboard contract
-        const allowance = await client.readContract({
+        const allowance = (await client.readContract({
             address: RUSD_ADDRESS,
             abi: RUSD_ABI,
             functionName: "allowance",
             args: [account.address, LEADERBOARD_ADDRESS],
-        }) as bigint
+        })) as bigint
         if (allowance < BigInt(5) * BigInt(10 ** 18)) {
             const approveHash = await wallet.writeContract({
                 address: RUSD_ADDRESS,
@@ -500,12 +506,12 @@ export function useOnChain() {
 
     /** Get a specific player's stats from leaderboard */
     async function fetchPlayerStats(player: string): Promise<PlayerStats> {
-        const result = await client.readContract({
+        const result = (await client.readContract({
             address: LEADERBOARD_ADDRESS,
             abi: LEADERBOARD_ABI,
             functionName: "getPlayerStats",
             args: [player as `0x${string}`],
-        }) as Record<string, bigint> | bigint[]
+        })) as Record<string, bigint> | bigint[]
 
         // viem may return a named struct object or a positional tuple
         const r = result as Record<string, bigint>

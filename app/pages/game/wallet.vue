@@ -8,8 +8,69 @@
 
         <!-- Content -->
         <div class="flex-1 overflow-y-auto px-4 pb-[80px]">
-            <!-- Wallet List Section -->
-            <div class="mb-4">
+            <!-- Empty Wallet State -->
+            <div v-if="!wm_hasWallets" class="flex flex-col items-center justify-center py-12">
+                <div class="text-[11px] font-mono tracking-wider mb-6" style="color: rgba(255,255,255,0.4)">NO WALLETS</div>
+                <div class="text-[13px] font-mono text-center mb-8" style="color: rgba(255,255,255,0.5)">Get started by creating a new wallet or using the sample wallet</div>
+                <div v-if="empty_wallet_error" class="text-[11px] font-mono text-center mb-6" style="color: #ef4444">{{ empty_wallet_error }}</div>
+
+                <!-- New wallet generation state -->
+                <div v-if="new_wallet_generated" class="w-full max-w-[340px] mb-6">
+                    <div class="rounded-2xl p-5" style="background: rgba(255,105,180,0.08); border: 1px solid rgba(212,96,154,0.25)">
+                        <div class="text-[11px] font-mono tracking-wider mb-2" style="color: rgba(255,255,255,0.4)">NEW WALLET CREATED</div>
+                        <div class="text-[11px] font-mono mb-1" style="color: rgba(255,255,255,0.35)">ADDRESS</div>
+                        <div class="text-[11px] font-mono truncate mb-3 p-2 rounded-lg" style="background: rgba(0,0,0,0.3); color: #e8e8ff">{{ generated_address }}</div>
+                        <div class="text-[11px] font-mono mb-1" style="color: rgba(255,255,255,0.35)">PRIVATE KEY (SAVE THIS!)</div>
+                        <div class="text-[11px] font-mono break-all p-2 rounded-lg mb-3" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444">{{ generated_pk }}</div>
+                        <div class="text-[10px] font-mono text-center mb-3" style="color: #ef4444">This key will NOT be shown again. Copy it now!</div>
+                        <div class="flex gap-2">
+                            <button
+                                class="flex-1 py-2.5 rounded-xl text-[12px] font-bold font-mono tracking-wider"
+                                style="background: rgba(255,105,180,0.1); color: #ff69b4; border: 1px solid rgba(212,96,154,0.3)"
+                                @click="copySpecificAddress(generated_pk)"
+                            >COPY KEY</button>
+                            <button
+                                class="flex-1 py-2.5 rounded-xl text-[12px] font-bold font-mono tracking-wider"
+                                style="background: rgba(255,105,180,0.25); color: #ff69b4; border: 1px solid rgba(212,96,154,0.4)"
+                                @click="confirmNewWallet"
+                            >ADD WALLET</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Choice buttons -->
+                <div v-else class="flex gap-4 w-full max-w-[340px]">
+                    <button
+                        class="flex-1 rounded-2xl p-5 flex flex-col items-center gap-3 transition-all"
+                        style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.2)"
+                        @click="handleCreateNewWallet"
+                    >
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+                        <div class="text-[12px] font-bold font-mono" style="color: #ff69b4">CREATE NEW</div>
+                        <div class="text-[10px] font-mono text-center" style="color: rgba(255,255,255,0.35)">Generate a new wallet with a fresh private key</div>
+                    </button>
+                    <button
+                        class="flex-1 rounded-2xl p-5 flex flex-col items-center gap-3 transition-all"
+                        style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.2)"
+                        @click="handleSetSampleWallet"
+                    >
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2" /><path d="M22 10H2" /></svg>
+                        <div class="text-[12px] font-bold font-mono" style="color: #ff69b4">SAMPLE</div>
+                        <div class="text-[10px] font-mono text-center" style="color: rgba(255,255,255,0.35)">Use the pre-loaded sample wallet with test funds</div>
+                    </button>
+                </div>
+
+                <!-- Import existing key link -->
+                <button
+                    v-if="!new_wallet_generated"
+                    class="mt-4 text-[11px] font-mono underline"
+                    style="color: rgba(255,255,255,0.35)"
+                    @click="show_add_wallet = true"
+                >or import with private key</button>
+            </div>
+
+            <!-- Wallet List Section (only when wallets exist) -->
+            <div v-if="wm_hasWallets" class="mb-4">
                 <div class="flex items-center justify-between mb-2">
                     <div class="text-[11px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">WALLETS</div>
                     <button
@@ -49,7 +110,6 @@
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
                             </button>
                             <button
-                                v-if="wm_wallets.length > 1"
                                 class="p-1.5 rounded-lg"
                                 style="background: rgba(239,68,68,0.1)"
                                 @click.stop="handleRemoveWallet(idx)"
@@ -61,7 +121,8 @@
                 </div>
             </div>
 
-            <!-- Total Balance Card -->
+            <!-- Total Balance Card (only when wallets exist) -->
+            <template v-if="wm_hasWallets">
             <div
                 class="rounded-2xl p-5 mb-4"
                 style="background: rgba(255,105,180,0.08); border: 1px solid rgba(212,96,154,0.25)"
@@ -318,6 +379,7 @@
                     <p class="text-[11px] font-mono" style="color: rgba(255,255,255,0.25)">No recent activity</p>
                 </div>
             </div>
+            </template>
         </div>
 
         <!-- Purchase GAME SCORE Modal -->
@@ -474,12 +536,30 @@
 </template>
 
 <script setup lang="ts">
-import { resetWalletClient } from '~/composables/useOnChain'
+import { resetWalletClient } from "~/composables/useOnChain"
 
 const game_store = useGameStoreC()
-const { getAddress, fetchEthBalance, withdrawEth, fetchRusdBalance, withdrawRusd, purchaseCreditsWithRusd, purchaseCreditsWithEth } = useOnChain()
+const {
+    getAddress,
+    fetchEthBalance,
+    withdrawEth,
+    fetchRusdBalance,
+    withdrawRusd,
+    purchaseCreditsWithRusd,
+    purchaseCreditsWithEth,
+} = useOnChain()
 const { restoreBalance } = useBatchSettlement()
-const { wallets: wm_wallets, activeIndex: wm_activeIndex, activeWallet: wm_activeWallet, addWallet: wm_addWallet, removeWallet: wm_removeWallet, switchWallet: wm_switchWallet } = useWalletManager()
+const {
+    wallets: wm_wallets,
+    activeIndex: wm_activeIndex,
+    activeWallet: wm_activeWallet,
+    hasWallets: wm_hasWallets,
+    addWallet: wm_addWallet,
+    removeWallet: wm_removeWallet,
+    switchWallet: wm_switchWallet,
+    createNewWallet: wm_createNewWallet,
+    setSampleWallet: wm_setSampleWallet,
+} = useWalletManager()
 
 // Wallet address
 const wallet_address = ref("")
@@ -491,6 +571,12 @@ const new_wallet_pk = ref("")
 const new_wallet_label = ref("")
 const add_wallet_error = ref("")
 const add_wallet_loading = ref(false)
+
+// Empty state (create new / sample)
+const new_wallet_generated = ref(false)
+const generated_pk = ref("")
+const generated_address = ref("")
+const empty_wallet_error = ref("")
 
 // ETH balance
 const eth_balance = ref("0")
@@ -560,6 +646,7 @@ const rusd_withdraw_button_style = computed(() => {
 
 // Load balance if not already loaded
 onMounted(async () => {
+    if (!wm_hasWallets.value) return
     if (!game_store.balance_loaded) {
         game_store.loadBalance()
     }
@@ -567,33 +654,22 @@ onMounted(async () => {
 })
 
 async function refreshBalances() {
+    if (!wm_hasWallets.value) {
+        wallet_address.value = ""
+        eth_balance.value = "0"
+        rusd_balance.value = 0
+        return
+    }
     try {
         wallet_address.value = getAddress()
         eth_balance.value = await fetchEthBalance()
         rusd_balance.value = await fetchRusdBalance()
-    }
-    catch (e) {
+    } catch (e) {
         console.warn("[Wallet] Failed to load balances:", e)
     }
 }
 
-function copyAddress() {
-    if (!wallet_address.value) return
-    navigator.clipboard.writeText(wallet_address.value).then(() => {
-        copy_label.value = "COPIED!"
-        setTimeout(() => { copy_label.value = "COPY" }, 2000)
-    }).catch(() => {
-        copy_label.value = "COPY"
-    })
-}
-
-function copySpecificAddress(addr: string) {
-    navigator.clipboard.writeText(addr).catch(() => {})
-}
-
-async function handleSwitchWallet(idx: number) {
-    if (idx === wm_activeIndex.value) return
-    wm_switchWallet(idx)
+async function afterWalletChanged(): Promise<void> {
     resetWalletClient()
     await refreshBalances()
     // Reload game balance for new wallet
@@ -601,15 +677,84 @@ async function handleSwitchWallet(idx: number) {
     game_store.loadBalance()
 }
 
+function copyAddress() {
+    if (!wallet_address.value) return
+    navigator.clipboard
+        .writeText(wallet_address.value)
+        .then(() => {
+            copy_label.value = "COPIED!"
+            setTimeout(() => {
+                copy_label.value = "COPY"
+            }, 2000)
+        })
+        .catch(() => {
+            copy_label.value = "COPY"
+        })
+}
+
+function copySpecificAddress(addr: string) {
+    navigator.clipboard.writeText(addr).catch(() => {})
+}
+
+function handleCreateNewWallet() {
+    empty_wallet_error.value = ""
+    try {
+        const { privateKey, address } = wm_createNewWallet()
+        generated_pk.value = privateKey
+        generated_address.value = address
+        new_wallet_generated.value = true
+    } catch (e: unknown) {
+        empty_wallet_error.value = e instanceof Error ? e.message : "Failed to generate wallet"
+    }
+}
+
+async function confirmNewWallet() {
+    empty_wallet_error.value = ""
+    try {
+        wm_addWallet(generated_pk.value, "Wallet 1")
+        wm_switchWallet(wm_wallets.value.length - 1)
+        new_wallet_generated.value = false
+        generated_pk.value = ""
+        generated_address.value = ""
+        await afterWalletChanged()
+    } catch (e: unknown) {
+        empty_wallet_error.value = e instanceof Error ? e.message : "Failed to add wallet"
+    }
+}
+
+async function handleSetSampleWallet() {
+    empty_wallet_error.value = ""
+    try {
+        wm_setSampleWallet()
+        wm_switchWallet(wm_wallets.value.length - 1)
+        await afterWalletChanged()
+    } catch (e: unknown) {
+        empty_wallet_error.value = e instanceof Error ? e.message : "Failed to set sample wallet"
+    }
+}
+
+async function handleSwitchWallet(idx: number) {
+    if (idx === wm_activeIndex.value) return
+    wm_switchWallet(idx)
+    await afterWalletChanged()
+}
+
 function handleRemoveWallet(idx: number) {
-    if (wm_wallets.value.length <= 1) return
     const wasActive = idx === wm_activeIndex.value
     wm_removeWallet(idx)
-    if (wasActive) {
+
+    if (!wm_hasWallets.value) {
+        // Empty state
         resetWalletClient()
-        refreshBalances()
+        wallet_address.value = ""
+        eth_balance.value = "0"
+        rusd_balance.value = 0
         game_store.balance_loaded = false
-        game_store.loadBalance()
+        return
+    }
+
+    if (wasActive) {
+        afterWalletChanged()
     }
 }
 
@@ -617,16 +762,15 @@ async function handleAddWallet() {
     add_wallet_error.value = ""
     add_wallet_loading.value = true
     try {
-        const addr = wm_addWallet(new_wallet_pk.value, new_wallet_label.value || undefined)
-        console.log("[Wallet] Added wallet:", addr)
+        wm_addWallet(new_wallet_pk.value, new_wallet_label.value || undefined)
+        wm_switchWallet(wm_wallets.value.length - 1)
         new_wallet_pk.value = ""
         new_wallet_label.value = ""
         show_add_wallet.value = false
-    }
-    catch (e: unknown) {
+        await afterWalletChanged()
+    } catch (e: unknown) {
         add_wallet_error.value = e instanceof Error ? e.message : "Invalid private key"
-    }
-    finally {
+    } finally {
         add_wallet_loading.value = false
     }
 }
@@ -652,13 +796,11 @@ async function handleWithdraw() {
         // Refresh balance
         eth_balance.value = await fetchEthBalance()
         withdraw_amount.value = ""
-    }
-    catch (e: unknown) {
+    } catch (e: unknown) {
         const errMsg = e instanceof Error ? e.message : String(e)
         withdraw_status.value = "Failed: " + errMsg.slice(0, 80)
         withdraw_status_color.value = "#ef4444"
-    }
-    finally {
+    } finally {
         withdraw_loading.value = false
     }
 }
@@ -681,13 +823,11 @@ async function handleWithdrawRusd() {
         // Refresh balance
         rusd_balance.value = await fetchRusdBalance()
         rusd_withdraw_amount.value = ""
-    }
-    catch (e: unknown) {
+    } catch (e: unknown) {
         const errMsg = e instanceof Error ? e.message : String(e)
         rusd_withdraw_status.value = "Failed: " + errMsg.slice(0, 80)
         rusd_withdraw_status_color.value = "#ef4444"
-    }
-    finally {
+    } finally {
         rusd_withdraw_loading.value = false
     }
 }
@@ -695,17 +835,17 @@ async function handleWithdrawRusd() {
 // ============ Purchase GAME SCORE Modal ============
 const show_purchase_modal = ref(false)
 const purchase_loading = ref(false)
-const purchase_method = ref<'rusd' | 'eth' | ''>('')
-const purchase_status = ref('')
-const purchase_status_color = ref('#22c55e')
-const purchase_tx = ref('')
+const purchase_method = ref<"rusd" | "eth" | "">("")
+const purchase_status = ref("")
+const purchase_status_color = ref("#22c55e")
+const purchase_tx = ref("")
 
 const PURCHASE_AMOUNT = 100 // +$100 game credits
 
 function handlePlusButton() {
-    purchase_status.value = ''
-    purchase_tx.value = ''
-    purchase_method.value = ''
+    purchase_status.value = ""
+    purchase_tx.value = ""
+    purchase_method.value = ""
     show_purchase_modal.value = true
 }
 
@@ -717,31 +857,29 @@ function closePurchaseModal() {
 async function purchaseWithRusd() {
     if (purchase_loading.value) return
     if (rusd_balance.value < 5) {
-        purchase_status.value = 'Insufficient rUSD balance'
-        purchase_status_color.value = '#ef4444'
+        purchase_status.value = "Insufficient rUSD balance"
+        purchase_status_color.value = "#ef4444"
         return
     }
     purchase_loading.value = true
-    purchase_method.value = 'rusd'
-    purchase_status.value = 'Sending transaction...'
-    purchase_status_color.value = '#ff69b4'
-    purchase_tx.value = ''
+    purchase_method.value = "rusd"
+    purchase_status.value = "Sending transaction..."
+    purchase_status_color.value = "#ff69b4"
+    purchase_tx.value = ""
     try {
         const hash = await purchaseCreditsWithRusd()
         purchase_tx.value = hash
         // Credits are now on-chain (+$100 PnL). Update local balance.
         game_store.balance += PURCHASE_AMOUNT
-        purchase_status.value = '+$100 added to GAME SCORE!'
-        purchase_status_color.value = '#22c55e'
+        purchase_status.value = "+$100 added to GAME SCORE!"
+        purchase_status_color.value = "#22c55e"
         // Refresh balances
         rusd_balance.value = await fetchRusdBalance()
-    }
-    catch (e: unknown) {
+    } catch (e: unknown) {
         const errMsg = e instanceof Error ? e.message : String(e)
-        purchase_status.value = 'Failed: ' + errMsg.slice(0, 60)
-        purchase_status_color.value = '#ef4444'
-    }
-    finally {
+        purchase_status.value = "Failed: " + errMsg.slice(0, 60)
+        purchase_status_color.value = "#ef4444"
+    } finally {
         purchase_loading.value = false
     }
 }
@@ -749,31 +887,29 @@ async function purchaseWithRusd() {
 async function purchaseWithEth() {
     if (purchase_loading.value) return
     if (parseFloat(eth_balance.value) < 0.0001) {
-        purchase_status.value = 'Insufficient ETH balance'
-        purchase_status_color.value = '#ef4444'
+        purchase_status.value = "Insufficient ETH balance"
+        purchase_status_color.value = "#ef4444"
         return
     }
     purchase_loading.value = true
-    purchase_method.value = 'eth'
-    purchase_status.value = 'Sending transaction...'
-    purchase_status_color.value = '#ff69b4'
-    purchase_tx.value = ''
+    purchase_method.value = "eth"
+    purchase_status.value = "Sending transaction..."
+    purchase_status_color.value = "#ff69b4"
+    purchase_tx.value = ""
     try {
         const hash = await purchaseCreditsWithEth()
         purchase_tx.value = hash
         // Credits are now on-chain (+$100 PnL). Update local balance.
         game_store.balance += PURCHASE_AMOUNT
-        purchase_status.value = '+$100 added to GAME SCORE!'
-        purchase_status_color.value = '#22c55e'
+        purchase_status.value = "+$100 added to GAME SCORE!"
+        purchase_status_color.value = "#22c55e"
         // Refresh balances
         eth_balance.value = await fetchEthBalance()
-    }
-    catch (e: unknown) {
+    } catch (e: unknown) {
         const errMsg = e instanceof Error ? e.message : String(e)
-        purchase_status.value = 'Failed: ' + errMsg.slice(0, 60)
-        purchase_status_color.value = '#ef4444'
-    }
-    finally {
+        purchase_status.value = "Failed: " + errMsg.slice(0, 60)
+        purchase_status_color.value = "#ef4444"
+    } finally {
         purchase_loading.value = false
     }
 }
@@ -784,7 +920,11 @@ const stats = computed(() => [
     { label: "Losses", value: String(game_store.total_losses), color: "#ef4444" },
     { label: "Win Rate", value: `${game_store.win_rate}%`, color: "#ff69b4" },
     { label: "Best Streak", value: String(game_store.best_streak) },
-    { label: "Total P&L", value: `$${(game_store.total_pnl / 100).toFixed(2)}`, color: game_store.total_pnl >= 0 ? "#22c55e" : "#ef4444" },
+    {
+        label: "Total P&L",
+        value: `$${(game_store.total_pnl / 100).toFixed(2)}`,
+        color: game_store.total_pnl >= 0 ? "#22c55e" : "#ef4444",
+    },
 ])
 </script>
 
