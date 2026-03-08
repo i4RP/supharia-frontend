@@ -1,122 +1,41 @@
 <template>
-    <div class="fixed inset-0 top-0 flex flex-col" style="background: #120e23">
-        <!-- Game Canvas -->
-        <canvas
-            ref="game_canvas"
-            class="w-full flex-1 cursor-crosshair"
-            @click="handleClick"
-        />
+    <div class="fixed inset-0 flex flex-col" style="background: #1a0a14">
+        <NuxtPage />
 
-        <!-- HUD Overlay (top left) -->
-        <div class="absolute top-2 left-4 flex items-center gap-4 text-sm font-mono">
-            <span class="text-white/60">
-                ETH:
-                <span class="text-white font-bold">${{ game_store.current_price.toFixed(2) }}</span>
-            </span>
-            <span :class="game_store.is_connected ? 'text-green-400' : 'text-red-400'">
-                {{ game_store.is_connected ? "ON-CHAIN" : "OFFLINE" }}
-            </span>
-        </div>
-
-        <!-- Controls (top right) -->
-        <div class="absolute top-2 right-4 flex items-center gap-2">
-            <span
-                v-if="dev_wallet_address"
-                class="px-2 py-1 rounded-lg text-xs font-mono"
-                style="background: rgba(0,212,255,0.1); color: #00D4FF; border: 1px solid rgba(0,212,255,0.2)"
-            >
-                {{ dev_wallet_address.slice(0, 6) }}...{{ dev_wallet_address.slice(-4) }}
-            </span>
-            <span
-                class="px-2 py-1 rounded-lg text-xs font-mono"
-                style="background: rgba(167,139,250,0.1); color: #A78BFA"
-            >
-                DEV
-            </span>
-            <button
-                class="px-3 py-1 rounded-lg bg-white/10 text-white/60 text-xs font-mono hover:bg-white/20 transition-colors"
-                @click="resetAndRestart"
-            >
-                RESET
-            </button>
-        </div>
-
-        <!-- Wallet Balance Button (bottom left) -->
-        <button
-            class="absolute bottom-6 left-4 flex items-center gap-2.5 px-4 py-2.5 rounded-full font-mono transition-all hover:scale-105 active:scale-95 z-40"
-            style="background: rgba(30, 20, 45, 0.9); border: 1px solid rgba(167, 139, 250, 0.25); backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4)"
-            @click="onWalletButtonClick"
-        >
-            <!-- Wallet Icon -->
-            <span
-                class="flex items-center justify-center w-7 h-7 rounded-lg"
-                style="background: linear-gradient(135deg, #A78BFA 0%, #C4B5FD 100%)"
-            >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="2" y="6" width="20" height="14" rx="3" stroke="#1E1430" stroke-width="2" fill="none"/>
-                    <path d="M6 6V5C6 3.89543 6.89543 3 8 3H16C17.1046 3 18 3.89543 18 5V6" stroke="#1E1430" stroke-width="2"/>
-                    <circle cx="17" cy="13" r="1.5" fill="#1E1430"/>
-                </svg>
-            </span>
-            <!-- Total Balance Amount -->
-            <span class="text-base font-bold tracking-wide" style="color: #E8E8FF">
-                {{ total_wallet_balance.toFixed(2) }} rUSD
-            </span>
-        </button>
-
-        <!-- Wallet Detail Panel (slides up from bottom-left) -->
+        <!-- Shared Bottom Nav Bar -->
         <div
-            v-if="wallet_panel_open"
-            class="absolute bottom-20 left-4 w-72 rounded-2xl font-mono z-40 overflow-hidden"
-            style="background: rgba(18, 14, 35, 0.97); border: 1px solid rgba(167, 139, 250, 0.2); backdrop-filter: blur(20px); box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6)"
+            class="fixed bottom-0 left-0 right-0 z-50 flex items-stretch"
+            style="background: rgba(20,8,16,0.95); border-top: 1px solid rgba(212,96,154,0.2); padding-bottom: env(safe-area-inset-bottom, 8px)"
         >
-            <!-- Panel Header -->
-            <div class="flex items-center justify-between px-4 pt-4 pb-2">
-                <span class="text-sm font-bold tracking-wider" style="color: #E8E8FF">Wallet</span>
-                <button
-                    class="w-6 h-6 flex items-center justify-center rounded-full text-xs"
-                    style="background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4)"
-                    @click="wallet_panel_open = false"
-                >
-                    x
-                </button>
-            </div>
+            <!-- Chart (Game) -->
+            <NuxtLink
+                to="/game/mode-c"
+                class="nav-btn flex-1 flex items-center justify-center py-4"
+                :class="{ 'nav-active': isGameRoute, 'nav-tapped': tapped === 'game' }"
+                @pointerdown="flashTap('game')"
+            >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" :stroke="isGameRoute || tapped === 'game' ? '#ff69b4' : 'rgba(255,255,255,0.4)'" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
+            </NuxtLink>
 
-            <!-- Balance Rows -->
-            <div class="px-4 pb-4 space-y-2.5">
-                <!-- MegaETH (testnet) -->
-                <div
-                    class="flex items-center justify-between px-3 py-2.5 rounded-xl"
-                    style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06)"
-                >
-                    <div class="flex items-center gap-2.5">
-                        <span
-                            class="flex items-center justify-center w-8 h-8 rounded-lg text-xs font-bold"
-                            style="background: linear-gradient(135deg, #00D4FF 0%, #627EEA 100%); color: #0a0a14"
-                        >ETH</span>
-                        <div>
-                            <div class="text-xs font-bold" style="color: #E8E8FF">MegaETH</div>
-                            <div class="text-[10px]" style="color: rgba(255,255,255,0.35)">testnet</div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-sm font-bold" style="color: #E8E8FF">{{ game_store.balance.toFixed(2) }} rUSD</div>
-                        <div class="text-[10px]" style="color: rgba(255,255,255,0.35)">on-chain</div>
-                    </div>
-                </div>
-            </div>
+            <!-- Star (Ranking) -->
+            <NuxtLink
+                to="/game/ranking"
+                class="nav-btn flex-1 flex items-center justify-center py-4"
+                :class="{ 'nav-active': isRankingRoute, 'nav-tapped': tapped === 'ranking' }"
+                @pointerdown="flashTap('ranking')"
+            >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" :stroke="isRankingRoute || tapped === 'ranking' ? '#ff69b4' : 'rgba(255,255,255,0.4)'" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+            </NuxtLink>
 
-            <!-- Refresh Button -->
-            <div class="px-4 pb-4">
-                <button
-                    class="w-full py-2 rounded-xl text-xs font-bold tracking-wide transition-all"
-                    style="background: rgba(167,139,250,0.12); color: #A78BFA; border: 1px solid rgba(167,139,250,0.2)"
-                    :disabled="wallet_loading"
-                    @click="refreshWalletBalances"
-                >
-                    {{ wallet_loading ? 'Loading...' : 'Refresh' }}
-                </button>
-            </div>
+            <!-- Profile (Wallet) -->
+            <NuxtLink
+                to="/game/wallet"
+                class="nav-btn flex-1 flex items-center justify-center py-4"
+                :class="{ 'nav-active': isWalletRoute, 'nav-tapped': tapped === 'wallet' }"
+                @pointerdown="flashTap('wallet')"
+            >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" :stroke="isWalletRoute || tapped === 'wallet' ? '#ff69b4' : 'rgba(255,255,255,0.4)'" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+            </NuxtLink>
         </div>
     </div>
 </template>
@@ -126,94 +45,38 @@ definePageMeta({
     layout: "game",
 })
 
-const game_canvas = useTemplateRef<HTMLCanvasElement>("game_canvas")
-const game_store = useGameStore()
-const onchain = useOnChain()
-const { connect, disconnect } = useGameStream()
-const { start, stop, handleClick, handleResize } = useGameCanvas(game_canvas)
+const route = useRoute()
 
-// Dev testnet wallet address
-const dev_wallet_address = ref(onchain.getAddress())
-const wallet_panel_open = ref(false)
-const wallet_loading = ref(false)
-
-// Total balance = on-chain rUSD (synced with game_store.balance)
-const total_wallet_balance = computed(() => {
-    return game_store.balance
+const isGameRoute = computed(() => {
+    const p = route.path
+    return p === "/game/mode-c" || p === "/game/mode-a" || p === "/game"
 })
 
-async function initOnChain() {
-    try {
-        // Fetch rUSD balance from chain
-        const bal = await onchain.fetchRusdBalance()
-        game_store.updateBalance(bal)
-        game_store.is_registered = true
+const isRankingRoute = computed(() => route.path === "/game/ranking")
 
-        // If balance is 0, claim from faucet
-        if (bal < 1) {
-            await onchain.claimFaucet()
-            const new_bal = await onchain.fetchRusdBalance()
-            game_store.updateBalance(new_bal)
-        }
+const isWalletRoute = computed(() => route.path === "/game/wallet")
 
-        // Ensure rUSD approved for pool
-        await onchain.ensureApproval()
-    } catch (err) {
-        console.error("On-chain init failed:", err)
-    }
+// Tap flash feedback
+const tapped = ref<string | null>(null)
+let tapTimer: ReturnType<typeof setTimeout> | null = null
+
+function flashTap(name: string) {
+    if (tapTimer) clearTimeout(tapTimer)
+    tapped.value = name
+    tapTimer = setTimeout(() => { tapped.value = null }, 400)
 }
-
-async function startGame() {
-    await initOnChain()
-    connect()
-    nextTick(() => {
-        start()
-    })
-}
-
-async function fetchWalletBalance() {
-    try {
-        wallet_loading.value = true
-        const bal = await onchain.fetchRusdBalance()
-        game_store.updateBalance(bal)
-    } catch (err) {
-        console.error("Failed to fetch balance:", err)
-    } finally {
-        wallet_loading.value = false
-    }
-}
-
-function onWalletButtonClick() {
-    wallet_panel_open.value = !wallet_panel_open.value
-    if (wallet_panel_open.value) {
-        fetchWalletBalance()
-    }
-}
-
-async function refreshWalletBalances() {
-    await fetchWalletBalance()
-}
-
-async function resetAndRestart() {
-    stop()
-    disconnect()
-    game_store.resetGame()
-    await initOnChain()
-    connect()
-    nextTick(() => {
-        start()
-    })
-}
-
-onMounted(async () => {
-    window.addEventListener("resize", handleResize)
-    // Auto-start game immediately — fully on-chain, no login required
-    await startGame()
-})
-
-onUnmounted(() => {
-    stop()
-    disconnect()
-    window.removeEventListener("resize", handleResize)
-})
 </script>
+
+<style scoped>
+.nav-btn {
+    background: transparent;
+    transition: background 0.5s ease-out;
+}
+.nav-btn.nav-tapped {
+    background: rgba(255, 105, 180, 0.25) !important;
+    transition: background 0s;
+}
+.nav-btn.nav-active:not(.nav-tapped) {
+    background: rgba(255, 105, 180, 0.12);
+}
+</style>
