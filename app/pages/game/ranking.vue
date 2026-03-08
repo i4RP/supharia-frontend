@@ -5,7 +5,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-lg font-bold tracking-wider" style="color: #ff69b4">RANKING</h1>
-                    <p class="text-[11px] font-mono mt-0.5" style="color: rgba(255,255,255,0.35)">On-chain leaderboard (<a href="https://megaeth-testnet-v2.blockscout.com/address/0xad15059611a74dc7b66451675e5787db9f6ff282" target="_blank" rel="noopener noreferrer" class="underline" style="color: #ff69b4">MegaETH</a>)</p>
+                    <p class="text-[11px] font-mono mt-0.5" style="color: rgba(255,255,255,0.35)">On-chain leaderboard (<a href="https://megaeth-testnet-v2.blockscout.com/address/0x3f781931748e20cd5537f0f223d0ceaa310b9338" target="_blank" rel="noopener noreferrer" class="underline" style="color: #ff69b4">MegaETH</a>)</p>
                 </div>
                 <button
                     class="p-2 rounded-lg transition-colors"
@@ -77,10 +77,13 @@
                         <span class="text-[10px] font-mono" style="color: rgba(255,255,255,0.3)">
                             {{ player.wins }}W
                         </span>
+                        <span class="text-[10px] font-mono" :style="{ color: player.winRate >= 50 ? '#22c55e' : '#ef4444' }">
+                            {{ player.winRate }}%
+                        </span>
                     </div>
                 </div>
 
-                <!-- PnL + Win Rate -->
+                <!-- PnL -->
                 <div class="text-right shrink-0">
                     <div
                         class="text-sm font-bold font-mono"
@@ -88,8 +91,16 @@
                     >
                         {{ player.pnl >= 0 ? '+' : '' }}${{ (player.pnl / 100).toFixed(2) }}
                     </div>
-                    <div class="text-[10px] font-mono" :style="{ color: player.winRate >= 50 ? '#22c55e' : '#ef4444' }">
-                        {{ player.winRate }}% win
+                    <div class="text-[9px] font-mono mt-0.5" style="color: rgba(255,255,255,0.25)">SCORE</div>
+                </div>
+
+                <!-- Rewards -->
+                <div class="text-right shrink-0 pl-2 border-l" style="border-color: rgba(212,96,154,0.15); min-width: 70px">
+                    <div class="text-[11px] font-bold font-mono" style="color: #ff69b4">
+                        {{ formatRewardRusd(player.rewardRusd) }} <span class="text-[9px] font-normal" style="color: rgba(255,105,180,0.6)">rUSD</span>
+                    </div>
+                    <div class="text-[10px] font-mono mt-0.5" style="color: rgba(255,255,255,0.4)">
+                        {{ formatRewardEth(player.rewardEth) }} <span class="text-[9px]" style="color: rgba(255,255,255,0.25)">ETH</span>
                     </div>
                 </div>
             </div>
@@ -110,6 +121,18 @@ const error = ref("")
 function shortAddr(addr: string): string {
     if (addr.length <= 10) return addr
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`
+}
+
+function formatRewardRusd(val: number): string {
+    if (val === 0) return "0.00"
+    if (val < 0.01) return val.toFixed(4)
+    return val.toFixed(2)
+}
+
+function formatRewardEth(val: number): string {
+    if (val === 0) return "0"
+    if (val < 0.0001) return val.toFixed(6)
+    return val.toFixed(4)
 }
 
 function rankStyle(index: number) {

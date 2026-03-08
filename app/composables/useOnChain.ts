@@ -14,7 +14,7 @@ const megaETH = {
 
 const POOL_ADDRESS = "0x627B45ad772f4069542D2CA08E320e3e7dA582cD" as const
 const RUSD_ADDRESS = "0x48345110dB117682E5a4EBdD99919Aff5b872D43" as const
-const LEADERBOARD_ADDRESS = "0xad15059611a74dc7b66451675e5787db9f6ff282" as const
+const LEADERBOARD_ADDRESS = "0x3f781931748e20cd5537f0f223d0ceaa310b9338" as const
 // Private key loaded from runtime config (NUXT_PUBLIC_DEV_PRIVATE_KEY env var)
 function getDevPrivateKey(): `0x${string}` {
     if (typeof useRuntimeConfig !== "undefined") {
@@ -56,13 +56,14 @@ const RUSD_ABI = parseAbi([
 
 const LEADERBOARD_ABI = parseAbi([
     "function submitResult(address player, bool won, int256 pnlDelta)",
-    "function getLeaderboard() view returns (address[] addrs, int256[] pnls, uint256[] totalBets, uint256[] winCounts)",
-    "function getPlayerStats(address player) view returns ((uint256 totalBets, uint256 wins, uint256 losses, int256 pnl, uint256 bestStreak, uint256 currentStreak, uint256 lastPlayedAt))",
+    "function getLeaderboard() view returns (address[] addrs, int256[] pnls, uint256[] totalBets, uint256[] winCounts, uint256[] rewardRusd, uint256[] rewardEth)",
+    "function getPlayerStats(address player) view returns ((uint256 totalBets, uint256 wins, uint256 losses, int256 pnl, uint256 bestStreak, uint256 currentStreak, uint256 lastPlayedAt, uint256 totalRewardRusd, uint256 totalRewardEth))",
     "function playerCount() view returns (uint256)",
     "function purchaseWithRusd()",
     "function purchaseWithEth() payable",
     "event GameResult(address indexed player, bool won, int256 pnlDelta, uint256 timestamp)",
     "event CreditsPurchased(address indexed player, uint256 creditsCents, string paymentMethod)",
+    "event RewardDistributed(address indexed player, uint256 rusdAmount, uint256 ethAmount)",
 ])
 
 export interface OnChainGrid {
@@ -78,6 +79,8 @@ export interface LeaderboardEntry {
     totalBets: number
     wins: number
     winRate: number    // percentage
+    rewardRusd: number // cumulative rUSD rewards (float, e.g. 5.0)
+    rewardEth: number  // cumulative ETH rewards (float, e.g. 0.0001)
 }
 
 export interface PlayerStats {
@@ -324,11 +327,11 @@ export function useOnChain() {
 
     /** Fetch on-chain leaderboard sorted by PnL */
     async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
-        const [addrs, pnls, totalBets, winCounts] = await client.readContract({
+        const [addrs, pnls, totalBets, winCounts, rewardRusd, rewardEth] = await client.readContract({
             address: LEADERBOARD_ADDRESS,
             abi: LEADERBOARD_ABI,
             functionName: "getLeaderboard",
-        }) as [string[], bigint[], bigint[], bigint[]]
+        }) as [string[], bigint[], bigint[], bigint[], bigint[], bigint[]]
 
         return addrs.map((addr: string, i: number) => {
             const bets = Number(totalBets[i])
@@ -339,6 +342,8 @@ export function useOnChain() {
                 totalBets: bets,
                 wins,
                 winRate: bets > 0 ? Math.round((wins / bets) * 100) : 0,
+                rewardRusd: Number(formatUnits(rewardRusd[i], 18)),
+                rewardEth: Number(formatUnits(rewardEth[i], 18)),
             }
         })
     }
@@ -358,6 +363,29 @@ export function useOnChain() {
         })
         await client.waitForTransactionReceipt({ hash })
         return hash
+    }
+
+    /** Fetch player stats including reward totals */
+    async function fetchPlayerRewards(player: string): Promise<{ rewardRusd: number; rewardEth: number }> {
+        const result = await client.readContract({
+            address: LEADERBOARD_ADDRESS,
+            abi: LEADERBOARD_ABI,
+            functionName: "getPlayerStats",
+            args: [player as `0x${string}`],
+        }) as Record<string, bigint> | bigint[]
+
+        const r = result as Record<string, bigint>
+        if (r.totalRewardRusd !== undefined) {
+            return {
+                rewardRusd: Number(formatUnits(r.totalRewardRusd, 18)),
+                rewardEth: Number(formatUnits(r.totalRewardEth, 18)),
+            }
+        }
+        const arr = result as bigint[]
+        return {
+            rewardRusd: Number(formatUnits(arr[7] ?? 0n, 18)),
+            rewardEth: Number(formatUnits(arr[8] ?? 0n, 18)),
+        }
     }
 
     /** Fetch native ETH balance for address */
@@ -502,6 +530,7 @@ export function useOnChain() {
         fetchLeaderboard,
         submitGameResult,
         fetchPlayerStats,
+        fetchPlayerRewards,
         fetchEthBalance,
         withdrawEth,
         withdrawRusd,
