@@ -35,8 +35,8 @@
                 style="background: rgba(255,105,180,0.08); border: 1px solid rgba(212,96,154,0.25)"
             >
                 <div class="flex items-center gap-1.5 mb-1">
-                    <span style="font-size: 14px">⚡</span>
-                    <span class="text-[11px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">GAME</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+                    <span class="text-[11px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">GAME SCORE</span>
                 </div>
                 <div class="text-3xl font-bold font-mono" style="color: #ff69b4">${{ game_store.balance.toFixed(2) }}</div>
                 <div class="text-[11px] font-mono mt-1" style="color: rgba(255,255,255,0.3)">{{ (game_store.total_pnl / 100).toFixed(2) }} P&amp;L</div>
