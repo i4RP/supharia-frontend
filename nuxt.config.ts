@@ -4,6 +4,11 @@ export default defineNuxtConfig({
     compatibilityDate: "2025-07-15",
     devtools: { enabled: true },
     ssr: false,
+    runtimeConfig: {
+        public: {
+            devPrivateKey: process.env.NUXT_PUBLIC_DEV_PRIVATE_KEY || "",
+        },
+    },
     modules: ["@pinia/nuxt", "@vite-pwa/nuxt"],
     css: ["~/assets/css/main.css"],
     vite: {

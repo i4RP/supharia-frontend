@@ -14,8 +14,17 @@ const megaETH = {
 
 const POOL_ADDRESS = "0x627B45ad772f4069542D2CA08E320e3e7dA582cD" as const
 const RUSD_ADDRESS = "0x48345110dB117682E5a4EBdD99919Aff5b872D43" as const
-const LEADERBOARD_ADDRESS = "0x3feb68cab679d87fef08276a7897d929aafcb7c5" as const
-const DEV_PRIVATE_KEY = "0xfa9ca47a819eab83f48e91b88af74c4b48a9205cbb16887d3d49becd1c3186f4" as const
+const LEADERBOARD_ADDRESS = "0xad15059611a74dc7b66451675e5787db9f6ff282" as const
+// Private key loaded from runtime config (NUXT_PUBLIC_DEV_PRIVATE_KEY env var)
+function getDevPrivateKey(): `0x${string}` {
+    if (typeof useRuntimeConfig !== "undefined") {
+        const config = useRuntimeConfig()
+        if (config.public?.devPrivateKey) {
+            return config.public.devPrivateKey as `0x${string}`
+        }
+    }
+    return "0x0" as `0x${string}`
+}
 
 // Minimal ABIs for the contracts we interact with
 const POOL_ABI = parseAbi([
@@ -50,7 +59,10 @@ const LEADERBOARD_ABI = parseAbi([
     "function getLeaderboard() view returns (address[] addrs, int256[] pnls, uint256[] totalBets, uint256[] winCounts)",
     "function getPlayerStats(address player) view returns ((uint256 totalBets, uint256 wins, uint256 losses, int256 pnl, uint256 bestStreak, uint256 currentStreak, uint256 lastPlayedAt))",
     "function playerCount() view returns (uint256)",
+    "function purchaseWithRusd()",
+    "function purchaseWithEth() payable",
     "event GameResult(address indexed player, bool won, int256 pnlDelta, uint256 timestamp)",
+    "event CreditsPurchased(address indexed player, uint256 creditsCents, string paymentMethod)",
 ])
 
 export interface OnChainGrid {
@@ -106,7 +118,7 @@ function getPublicClient(): PublicClient {
 
 function getWalletClient(): { wallet: WalletClient; account: Account } {
     if (!_walletClient || !_account) {
-        _account = privateKeyToAccount(DEV_PRIVATE_KEY)
+        _account = privateKeyToAccount(getDevPrivateKey())
         _walletClient = createWalletClient({
             account: _account,
             chain: megaETH,
@@ -386,6 +398,59 @@ export function useOnChain() {
         return hash
     }
 
+    /** Purchase $100 game credits by paying 5 rUSD on-chain */
+    async function purchaseCreditsWithRusd(): Promise<string> {
+        const { wallet, account } = getWalletClient()
+        // Ensure rUSD is approved for Leaderboard contract
+        const allowance = await client.readContract({
+            address: RUSD_ADDRESS,
+            abi: RUSD_ABI,
+            functionName: "allowance",
+            args: [account.address, LEADERBOARD_ADDRESS],
+        }) as bigint
+        if (allowance < BigInt(5) * BigInt(10 ** 18)) {
+            const approveHash = await wallet.writeContract({
+                address: RUSD_ADDRESS,
+                abi: RUSD_ABI,
+                functionName: "approve",
+                args: [LEADERBOARD_ADDRESS, (BigInt(1) << BigInt(255)) - BigInt(1)],
+                chain: megaETH,
+                account,
+                gas: BigInt(200_000),
+                gasPrice: BigInt(1_000_000),
+            })
+            await client.waitForTransactionReceipt({ hash: approveHash })
+        }
+        const hash = await wallet.writeContract({
+            address: LEADERBOARD_ADDRESS,
+            abi: LEADERBOARD_ABI,
+            functionName: "purchaseWithRusd",
+            chain: megaETH,
+            account,
+            gas: BigInt(500_000),
+            gasPrice: BigInt(1_000_000),
+        })
+        await client.waitForTransactionReceipt({ hash })
+        return hash
+    }
+
+    /** Purchase $100 game credits by paying 0.0001 ETH on-chain */
+    async function purchaseCreditsWithEth(): Promise<string> {
+        const { wallet, account } = getWalletClient()
+        const hash = await wallet.writeContract({
+            address: LEADERBOARD_ADDRESS,
+            abi: LEADERBOARD_ABI,
+            functionName: "purchaseWithEth",
+            chain: megaETH,
+            account,
+            value: parseEther("0.0001"),
+            gas: BigInt(500_000),
+            gasPrice: BigInt(1_000_000),
+        })
+        await client.waitForTransactionReceipt({ hash })
+        return hash
+    }
+
     /** Get a specific player's stats from leaderboard */
     async function fetchPlayerStats(player: string): Promise<PlayerStats> {
         const result = await client.readContract({
@@ -440,5 +505,7 @@ export function useOnChain() {
         fetchEthBalance,
         withdrawEth,
         withdrawRusd,
+        purchaseCreditsWithRusd,
+        purchaseCreditsWithEth,
     }
 }

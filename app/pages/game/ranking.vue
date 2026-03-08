@@ -5,7 +5,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-lg font-bold tracking-wider" style="color: #ff69b4">RANKING</h1>
-                    <p class="text-[11px] font-mono mt-0.5" style="color: rgba(255,255,255,0.35)">On-chain leaderboard (<a href="https://megaeth-testnet-v2.blockscout.com/address/0x3feb68cab679d87fef08276a7897d929aafcb7c5" target="_blank" rel="noopener noreferrer" class="underline" style="color: #ff69b4">MegaETH</a>)</p>
+                    <p class="text-[11px] font-mono mt-0.5" style="color: rgba(255,255,255,0.35)">On-chain leaderboard (<a href="https://megaeth-testnet-v2.blockscout.com/address/0xad15059611a74dc7b66451675e5787db9f6ff282" target="_blank" rel="noopener noreferrer" class="underline" style="color: #ff69b4">MegaETH</a>)</p>
                 </div>
                 <button
                     class="p-2 rounded-lg transition-colors"

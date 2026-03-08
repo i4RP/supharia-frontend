@@ -26,7 +26,7 @@ export const GAME_C_GRID = {
 } as const
 
 export const GAME_C_BALANCE = {
-    INITIAL: 100,
+    INITIAL: 0,
     BET_COST: 5,
 } as const
 

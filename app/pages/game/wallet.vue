@@ -37,7 +37,7 @@
                 <div class="flex items-center gap-2 mb-1">
                     <span class="text-[11px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">GAME SCORE</span>
                     <a
-                        href="https://megaeth-testnet-v2.blockscout.com/address/0x3feb68cab679d87fef08276a7897d929aafcb7c5"
+                        href="https://megaeth-testnet-v2.blockscout.com/address/0xad15059611a74dc7b66451675e5787db9f6ff282"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="text-[10px] font-mono tracking-wider underline"
@@ -383,8 +383,8 @@
 
 <script setup lang="ts">
 const game_store = useGameStoreC()
-const { getAddress, fetchEthBalance, withdrawEth, fetchRusdBalance, withdrawRusd } = useOnChain()
-const { addPurchasedCredits } = useBatchSettlement()
+const { getAddress, fetchEthBalance, withdrawEth, fetchRusdBalance, withdrawRusd, purchaseCreditsWithRusd, purchaseCreditsWithEth } = useOnChain()
+const { restoreBalance } = useBatchSettlement()
 
 // Wallet address
 const wallet_address = ref("")
@@ -551,9 +551,6 @@ const purchase_status_color = ref('#22c55e')
 const purchase_tx = ref('')
 
 const PURCHASE_AMOUNT = 100 // +$100 game credits
-const RUSD_COST = '5'       // 5 rUSD
-const ETH_COST = '0.0001'   // 0.0001 ETH
-const TREASURY_ADDRESS = '0x3feb68cab679d87fef08276a7897d929aafcb7c5' // Leaderboard contract
 
 function handlePlusButton() {
     purchase_status.value = ''
@@ -576,14 +573,14 @@ async function purchaseWithRusd() {
     }
     purchase_loading.value = true
     purchase_method.value = 'rusd'
-    purchase_status.value = ''
+    purchase_status.value = 'Sending transaction...'
+    purchase_status_color.value = '#ff69b4'
     purchase_tx.value = ''
     try {
-        const hash = await withdrawRusd(TREASURY_ADDRESS, RUSD_COST)
+        const hash = await purchaseCreditsWithRusd()
         purchase_tx.value = hash
-        // Add $100 to game balance + persist to localStorage
+        // Credits are now on-chain (+$100 PnL). Update local balance.
         game_store.balance += PURCHASE_AMOUNT
-        addPurchasedCredits(PURCHASE_AMOUNT)
         purchase_status.value = '+$100 added to GAME SCORE!'
         purchase_status_color.value = '#22c55e'
         // Refresh balances
@@ -608,14 +605,14 @@ async function purchaseWithEth() {
     }
     purchase_loading.value = true
     purchase_method.value = 'eth'
-    purchase_status.value = ''
+    purchase_status.value = 'Sending transaction...'
+    purchase_status_color.value = '#ff69b4'
     purchase_tx.value = ''
     try {
-        const hash = await withdrawEth(TREASURY_ADDRESS, ETH_COST)
+        const hash = await purchaseCreditsWithEth()
         purchase_tx.value = hash
-        // Add $100 to game balance + persist to localStorage
+        // Credits are now on-chain (+$100 PnL). Update local balance.
         game_store.balance += PURCHASE_AMOUNT
-        addPurchasedCredits(PURCHASE_AMOUNT)
         purchase_status.value = '+$100 added to GAME SCORE!'
         purchase_status_color.value = '#22c55e'
         // Refresh balances
