@@ -328,7 +328,7 @@
                     <div class="absolute inset-0" style="background: rgba(0,0,0,0.75); backdrop-filter: blur(8px)" />
 
                     <!-- Modal Card -->
-                    <div class="relative w-[340px] rounded-2xl p-6" style="background: linear-gradient(145deg, #2a1020, #1a0a14); border: 1px solid rgba(212,96,154,0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,105,180,0.08)">
+                    <div class="relative w-[calc(100%-32px)] max-w-[340px] rounded-2xl p-5 sm:p-6" style="background: linear-gradient(145deg, #2a1020, #1a0a14); border: 1px solid rgba(212,96,154,0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,105,180,0.08)">
                         <!-- Close button -->
                         <button class="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full" style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4)" @click="closePurchaseModal">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -416,7 +416,7 @@
             <Transition name="modal">
                 <div v-if="show_add_wallet" class="fixed inset-0 z-50 flex items-center justify-center" @click.self="show_add_wallet = false">
                     <div class="absolute inset-0" style="background: rgba(0,0,0,0.75); backdrop-filter: blur(8px)" />
-                    <div class="relative w-[340px] rounded-2xl p-6" style="background: linear-gradient(145deg, #2a1020, #1a0a14); border: 1px solid rgba(212,96,154,0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,105,180,0.08)">
+                    <div class="relative w-[calc(100%-32px)] max-w-[340px] rounded-2xl p-5 sm:p-6" style="background: linear-gradient(145deg, #2a1020, #1a0a14); border: 1px solid rgba(212,96,154,0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,105,180,0.08)">
                         <button class="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full" style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4)" @click="show_add_wallet = false">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                         </button>
