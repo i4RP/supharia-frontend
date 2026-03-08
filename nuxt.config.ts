@@ -17,8 +17,8 @@ export default defineNuxtConfig({
     pwa: {
         registerType: "autoUpdate",
         manifest: {
-            name: "SUPHARIA - Tap Trading",
-            short_name: "SUPHARIA",
+            name: "MPARA - Tap Trading",
+            short_name: "MPARA",
             description: "Trade at the Speed of Air",
             theme_color: "#0A0A14",
             background_color: "#0A0A14",
@@ -64,7 +64,7 @@ export default defineNuxtConfig({
                 { name: "theme-color", content: "#0A0A14" },
                 { name: "apple-mobile-web-app-capable", content: "yes" },
                 { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-                { name: "apple-mobile-web-app-title", content: "SUPHARIA" },
+                { name: "apple-mobile-web-app-title", content: "MPARA" },
                 { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" },
             ],
             link: [

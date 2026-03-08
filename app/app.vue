@@ -9,6 +9,6 @@ const app_store = useAppStore()
 
 useHead({
     htmlAttrs: { class: computed(() => (app_store.is_dark ? "dark" : "")) },
-    title: "SUPHARIA",
+    title: "MPARA",
 })
 </script>
