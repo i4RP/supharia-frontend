@@ -287,6 +287,97 @@
                 </div>
             </div>
         </div>
+
+        <!-- Purchase GAME SCORE Modal -->
+        <Teleport to="body">
+            <Transition name="modal">
+                <div v-if="show_purchase_modal" class="fixed inset-0 z-50 flex items-center justify-center" @click.self="closePurchaseModal">
+                    <!-- Backdrop -->
+                    <div class="absolute inset-0" style="background: rgba(0,0,0,0.75); backdrop-filter: blur(8px)" />
+
+                    <!-- Modal Card -->
+                    <div class="relative w-[340px] rounded-2xl p-6" style="background: linear-gradient(145deg, #2a1020, #1a0a14); border: 1px solid rgba(212,96,154,0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,105,180,0.08)">
+                        <!-- Close button -->
+                        <button class="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full" style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4)" @click="closePurchaseModal">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                        </button>
+
+                        <!-- Title -->
+                        <div class="mb-5">
+                            <div class="text-[11px] font-mono tracking-wider mb-1" style="color: rgba(255,255,255,0.4)">ADD TO</div>
+                            <div class="text-xl font-bold font-mono" style="color: #ff69b4">GAME SCORE</div>
+                        </div>
+
+                        <!-- Amount display -->
+                        <div class="text-center rounded-xl py-4 mb-5" style="background: rgba(255,105,180,0.06); border: 1px solid rgba(212,96,154,0.15)">
+                            <div class="text-3xl font-bold font-mono" style="color: #ff69b4">+$100</div>
+                            <div class="text-[10px] font-mono mt-1" style="color: rgba(255,255,255,0.3)">GAME CREDITS</div>
+                        </div>
+
+                        <!-- Payment options -->
+                        <div class="text-[10px] font-mono tracking-wider mb-2" style="color: rgba(255,255,255,0.35)">PAY WITH</div>
+                        <div class="flex flex-col gap-2.5">
+                            <!-- rUSD option -->
+                            <button
+                                class="w-full rounded-xl p-3.5 flex items-center gap-3 transition-all"
+                                :style="purchase_loading ? 'background: rgba(30,15,25,0.6); border: 1px solid rgba(212,96,154,0.1); cursor: wait; opacity: 0.5' : 'background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.2); cursor: pointer'"
+                                :disabled="purchase_loading"
+                                @click="purchaseWithRusd"
+                            >
+                                <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style="background: rgba(255,105,180,0.1); border: 1px solid rgba(212,96,154,0.2)">
+                                    <span class="text-[13px] font-bold font-mono" style="color: #ff69b4">$</span>
+                                </div>
+                                <div class="flex-1 text-left">
+                                    <div class="text-[13px] font-bold font-mono" style="color: #e8e8ff">5 rUSD</div>
+                                    <div class="text-[10px] font-mono" style="color: rgba(255,255,255,0.3)">Balance: {{ rusd_display }} rUSD</div>
+                                </div>
+                                <div v-if="purchase_loading && purchase_method === 'rusd'" class="flex-shrink-0">
+                                    <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4m-3.93 7.07l-2.83-2.83M7.76 7.76L4.93 4.93" /></svg>
+                                </div>
+                                <div v-else class="flex-shrink-0">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                                </div>
+                            </button>
+
+                            <!-- ETH option -->
+                            <button
+                                class="w-full rounded-xl p-3.5 flex items-center gap-3 transition-all"
+                                :style="purchase_loading ? 'background: rgba(30,15,25,0.6); border: 1px solid rgba(212,96,154,0.1); cursor: wait; opacity: 0.5' : 'background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.2); cursor: pointer'"
+                                :disabled="purchase_loading"
+                                @click="purchaseWithEth"
+                            >
+                                <div class="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
+                                    <img src="/megaeth-logo.jpg" alt="ETH" class="w-full h-full object-cover" />
+                                </div>
+                                <div class="flex-1 text-left">
+                                    <div class="text-[13px] font-bold font-mono" style="color: #e8e8ff">0.0001 ETH</div>
+                                    <div class="text-[10px] font-mono" style="color: rgba(255,255,255,0.3)">Balance: {{ eth_display }} ETH</div>
+                                </div>
+                                <div v-if="purchase_loading && purchase_method === 'eth'" class="flex-shrink-0">
+                                    <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4m-3.93 7.07l-2.83-2.83M7.76 7.76L4.93 4.93" /></svg>
+                                </div>
+                                <div v-else class="flex-shrink-0">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Status -->
+                        <div v-if="purchase_status" class="mt-4 text-center">
+                            <div class="text-[11px] font-mono" :style="{ color: purchase_status_color }">{{ purchase_status }}</div>
+                            <a
+                                v-if="purchase_tx"
+                                :href="`https://megaeth-testnet-v2.blockscout.com/tx/${purchase_tx}`"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="mt-1 block text-[9px] font-mono truncate underline"
+                                style="color: #ff69b4"
+                            >TX: {{ purchase_tx }}</a>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </div>
 </template>
 
@@ -450,9 +541,91 @@ async function handleWithdrawRusd() {
     }
 }
 
+// ============ Purchase GAME SCORE Modal ============
+const show_purchase_modal = ref(false)
+const purchase_loading = ref(false)
+const purchase_method = ref<'rusd' | 'eth' | ''>('')
+const purchase_status = ref('')
+const purchase_status_color = ref('#22c55e')
+const purchase_tx = ref('')
+
+const PURCHASE_AMOUNT = 100 // +$100 game credits
+const RUSD_COST = '5'       // 5 rUSD
+const ETH_COST = '0.0001'   // 0.0001 ETH
+const TREASURY_ADDRESS = '0x3feb68cab679d87fef08276a7897d929aafcb7c5' // Leaderboard contract
+
 function handlePlusButton() {
-    // Placeholder - behavior will be defined later
-    console.log("[Wallet] Plus button tapped")
+    purchase_status.value = ''
+    purchase_tx.value = ''
+    purchase_method.value = ''
+    show_purchase_modal.value = true
+}
+
+function closePurchaseModal() {
+    if (purchase_loading.value) return
+    show_purchase_modal.value = false
+}
+
+async function purchaseWithRusd() {
+    if (purchase_loading.value) return
+    if (rusd_balance.value < 5) {
+        purchase_status.value = 'Insufficient rUSD balance'
+        purchase_status_color.value = '#ef4444'
+        return
+    }
+    purchase_loading.value = true
+    purchase_method.value = 'rusd'
+    purchase_status.value = ''
+    purchase_tx.value = ''
+    try {
+        const hash = await withdrawRusd(TREASURY_ADDRESS, RUSD_COST)
+        purchase_tx.value = hash
+        // Add $100 to game balance
+        game_store.balance += PURCHASE_AMOUNT
+        purchase_status.value = '+$100 added to GAME SCORE!'
+        purchase_status_color.value = '#22c55e'
+        // Refresh balances
+        rusd_balance.value = await fetchRusdBalance()
+    }
+    catch (e: unknown) {
+        const errMsg = e instanceof Error ? e.message : String(e)
+        purchase_status.value = 'Failed: ' + errMsg.slice(0, 60)
+        purchase_status_color.value = '#ef4444'
+    }
+    finally {
+        purchase_loading.value = false
+    }
+}
+
+async function purchaseWithEth() {
+    if (purchase_loading.value) return
+    if (parseFloat(eth_balance.value) < 0.0001) {
+        purchase_status.value = 'Insufficient ETH balance'
+        purchase_status_color.value = '#ef4444'
+        return
+    }
+    purchase_loading.value = true
+    purchase_method.value = 'eth'
+    purchase_status.value = ''
+    purchase_tx.value = ''
+    try {
+        const hash = await withdrawEth(TREASURY_ADDRESS, ETH_COST)
+        purchase_tx.value = hash
+        // Add $100 to game balance
+        game_store.balance += PURCHASE_AMOUNT
+        purchase_status.value = '+$100 added to GAME SCORE!'
+        purchase_status_color.value = '#22c55e'
+        // Refresh balances
+        eth_balance.value = await fetchEthBalance()
+    }
+    catch (e: unknown) {
+        const errMsg = e instanceof Error ? e.message : String(e)
+        purchase_status.value = 'Failed: ' + errMsg.slice(0, 60)
+        purchase_status_color.value = '#ef4444'
+    }
+    finally {
+        purchase_loading.value = false
+    }
 }
 
 const stats = computed(() => [
@@ -464,3 +637,14 @@ const stats = computed(() => [
     { label: "Total P&L", value: `$${(game_store.total_pnl / 100).toFixed(2)}`, color: game_store.total_pnl >= 0 ? "#22c55e" : "#ef4444" },
 ])
 </script>
+
+<style scoped>
+.modal-enter-active,
+.modal-leave-active {
+    transition: opacity 0.2s ease;
+}
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+}
+</style>
