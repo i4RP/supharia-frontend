@@ -1,0 +1,211 @@
+# DXS Swap データモデル定義
+# Version: 0.1.0
+
+NavTab:
+  type: union
+  values:
+    - swap
+    - limit-orders
+    - partial-fill
+    - routing
+    - pool
+    - rewards
+    - farming
+    - bridge
+    - explorer
+    - tokens
+    - analytics
+    - charts
+    - portfolio
+    - history
+    - s402
+    - docs
+    - launchpad
+    - governance
+    - notifications
+    - security
+    - admin
+    - game
+
+NavChild:
+  label: string
+  tab: NavTab
+
+NavGroup:
+  label: string
+  icon: string
+  children: NavChild[]
+
+Language:
+  type: union
+  values: [en, ja]
+
+Theme:
+  type: union
+  values: [dark, light]
+
+Network:
+  type: union
+  values: [bsv-mainnet, bsv-testnet]
+
+WalletTab:
+  type: union
+  values: [extension, wif, mnemonic]
+
+Token:
+  symbol: string
+  name: string
+  color: string
+  token_id: string | null (optional)
+  issue_tx: string | null (optional)
+  satoshis: number (optional)
+  freeze: boolean (optional)
+  balance: number (optional)
+
+Pool:
+  id: string
+  label: string
+  tvl: string
+  vol_24h: string
+  fee: string
+  fav: boolean
+  price: string (optional)
+
+PoolTransaction:
+  type: string
+  in: string
+  out: string
+  fee: string
+  status: string
+  time: string
+
+Candle:
+  open: number
+  high: number
+  low: number
+  close: number
+  volume: number
+
+ChartConfig:
+  stroke: string
+  text: string
+
+TokenHolding:
+  symbol: string
+  balance: string
+  price: string
+  value: string
+  change: string
+  up: boolean
+
+LpPosition:
+  pool: string
+  shares: string
+  pct: string
+  value: string
+  apy: string
+
+Proposal:
+  id: string
+  title: string
+  description: string
+  status: string
+  fee_rate: string
+  expires: string
+  votes_for: number
+  votes_against: number
+
+BridgeTransaction:
+  direction: string
+  amount: string
+  token: string
+  status: string
+  time: string
+  txid: string
+
+AdminUser:
+  address: string
+  swaps: number
+  lp_value: string
+  last_active: string
+
+AdminLog:
+  level: string
+  message: string
+  time: string
+
+S402Agent:
+  id: string
+  name: string
+  address: string
+  balance: number
+  total_payments: number
+  created: string
+
+S402Endpoint:
+  path: string
+  price: number
+
+Notification:
+  id: string
+  type: string
+  title: string
+  message: string
+  time: string
+  read: boolean
+
+PriceAlert:
+  id: string
+  type: string
+  threshold: string
+  active: boolean
+
+# Pinia Store Models
+
+AppState:
+  theme: Theme
+  language: Language
+  network: Network
+  tos_agreed: boolean
+  is_live: boolean
+  is_dark: computed<boolean>
+
+WalletState:
+  wallet_connected: boolean
+  wallet_address: string
+  show_wallet_modal: boolean
+
+# Game Models
+
+PricePoint:
+  price: number
+  timestamp: number
+
+GridCell:
+  col: number
+  row: number
+  price_low: number
+  price_high: number
+  time_start: number
+  time_end: number
+
+GameOrderStatus:
+  type: union
+  values: [active, won, lost, expired]
+
+GameOrder:
+  id: string
+  cell: GridCell
+  cost: number
+  multiplier: number
+  placed_at: number
+  status: GameOrderStatus
+
+GameState:
+  price_history: PricePoint[]
+  current_price: number
+  orders: GameOrder[]
+  balance: number
+  is_connected: boolean
+  is_running: boolean
+  game_start_time: number
