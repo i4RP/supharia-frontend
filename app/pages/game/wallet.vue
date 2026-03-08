@@ -63,8 +63,8 @@
                 <!-- Import existing key link -->
                 <button
                     v-if="!new_wallet_generated"
-                    class="mt-4 text-[11px] font-mono underline"
-                    style="color: rgba(255,255,255,0.35)"
+                    class="mt-6 px-6 py-3 text-[12px] font-mono underline"
+                    style="color: rgba(255,255,255,0.4)"
                     @click="show_add_wallet = true"
                 >or import with private key</button>
             </div>
