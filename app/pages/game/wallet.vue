@@ -34,9 +34,18 @@
                 class="rounded-2xl p-5 mb-4"
                 style="background: rgba(255,105,180,0.08); border: 1px solid rgba(212,96,154,0.25)"
             >
-                <div class="flex items-center gap-1.5 mb-1">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
-                    <span class="text-[11px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">GAME SCORE</span>
+                <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center gap-1.5">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+                        <span class="text-[11px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">GAME SCORE</span>
+                    </div>
+                    <a
+                        href="https://megaeth-testnet-v2.blockscout.com/address/0x3feb68cab679d87fef08276a7897d929aafcb7c5"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-[10px] font-mono tracking-wider underline"
+                        style="color: #ff69b4"
+                    >ONCHAIN</a>
                 </div>
                 <div class="text-3xl font-bold font-mono" style="color: #ff69b4">${{ game_store.balance.toFixed(2) }}</div>
                 <div class="text-[11px] font-mono mt-1" style="color: rgba(255,255,255,0.3)">{{ (game_store.total_pnl / 100).toFixed(2) }} P&amp;L</div>
