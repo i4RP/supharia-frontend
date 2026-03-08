@@ -1,8 +1,8 @@
 <template>
-    <div class="absolute inset-0 flex flex-col" style="background: #1a0a14">
+    <div class="absolute inset-0 flex flex-col" style="background: #03080F">
         <!-- Header -->
         <div class="px-4 pt-[env(safe-area-inset-top,12px)] pb-3">
-            <h1 class="text-lg font-bold tracking-wider" style="color: #ff69b4">WALLET</h1>
+            <h1 class="text-lg font-bold tracking-wider" style="color: #1B8DFF">WALLET</h1>
             <p class="text-[11px] font-mono mt-0.5" style="color: rgba(255,255,255,0.35)">Your balances &amp; activity</p>
         </div>
 
@@ -16,22 +16,22 @@
 
                 <!-- New wallet generation state -->
                 <div v-if="new_wallet_generated" class="w-full max-w-[340px] mb-6">
-                    <div class="rounded-2xl p-5" style="background: rgba(255,105,180,0.08); border: 1px solid rgba(212,96,154,0.25)">
+                    <div class="rounded-2xl p-5" style="background: rgba(27,141,255,0.08); border: 1px solid rgba(27,141,255,0.25)">
                         <div class="text-[11px] font-mono tracking-wider mb-2" style="color: rgba(255,255,255,0.4)">NEW WALLET CREATED</div>
                         <div class="text-[11px] font-mono mb-1" style="color: rgba(255,255,255,0.35)">ADDRESS</div>
-                        <div class="text-[11px] font-mono truncate mb-3 p-2 rounded-lg" style="background: rgba(0,0,0,0.3); color: #e8e8ff">{{ generated_address }}</div>
+                        <div class="text-[11px] font-mono truncate mb-3 p-2 rounded-lg" style="background: rgba(0,0,0,0.3); color: #E0EEFF">{{ generated_address }}</div>
                         <div class="text-[11px] font-mono mb-1" style="color: rgba(255,255,255,0.35)">PRIVATE KEY (SAVE THIS!)</div>
                         <div class="text-[11px] font-mono break-all p-2 rounded-lg mb-3" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444">{{ generated_pk }}</div>
                         <div class="text-[10px] font-mono text-center mb-3" style="color: #ef4444">This key will NOT be shown again. Copy it now!</div>
                         <div class="flex gap-2">
                             <button
                                 class="flex-1 py-2.5 rounded-xl text-[12px] font-bold font-mono tracking-wider"
-                                style="background: rgba(255,105,180,0.1); color: #ff69b4; border: 1px solid rgba(212,96,154,0.3)"
+                                style="background: rgba(27,141,255,0.1); color: #1B8DFF; border: 1px solid rgba(27,141,255,0.3)"
                                 @click="copySpecificAddress(generated_pk)"
                             >COPY KEY</button>
                             <button
                                 class="flex-1 py-2.5 rounded-xl text-[12px] font-bold font-mono tracking-wider"
-                                style="background: rgba(255,105,180,0.25); color: #ff69b4; border: 1px solid rgba(212,96,154,0.4)"
+                                style="background: rgba(27,141,255,0.25); color: #1B8DFF; border: 1px solid rgba(27,141,255,0.4)"
                                 @click="confirmNewWallet"
                             >ADD WALLET</button>
                         </div>
@@ -42,20 +42,20 @@
                 <div v-else class="flex gap-4 w-full max-w-[340px]">
                     <button
                         class="flex-1 rounded-2xl p-5 flex flex-col items-center gap-3 transition-all"
-                        style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.2)"
+                        style="background: rgba(5,13,26,0.8); border: 1px solid rgba(27,141,255,0.2)"
                         @click="handleCreateNewWallet"
                     >
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
-                        <div class="text-[12px] font-bold font-mono" style="color: #ff69b4">CREATE NEW</div>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1B8DFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+                        <div class="text-[12px] font-bold font-mono" style="color: #1B8DFF">CREATE NEW</div>
                         <div class="text-[10px] font-mono text-center" style="color: rgba(255,255,255,0.35)">Generate a new wallet with a fresh private key</div>
                     </button>
                     <button
                         class="flex-1 rounded-2xl p-5 flex flex-col items-center gap-3 transition-all"
-                        style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.2)"
+                        style="background: rgba(5,13,26,0.8); border: 1px solid rgba(27,141,255,0.2)"
                         @click="handleSetSampleWallet"
                     >
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2" /><path d="M22 10H2" /></svg>
-                        <div class="text-[12px] font-bold font-mono" style="color: #ff69b4">SAMPLE</div>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1B8DFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2" /><path d="M22 10H2" /></svg>
+                        <div class="text-[12px] font-bold font-mono" style="color: #1B8DFF">SAMPLE</div>
                         <div class="text-[10px] font-mono text-center" style="color: rgba(255,255,255,0.35)">Use the pre-loaded sample wallet with test funds</div>
                     </button>
                 </div>
@@ -75,7 +75,7 @@
                     <div class="text-[11px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">WALLETS</div>
                     <button
                         class="px-2.5 py-1 rounded-lg text-[10px] font-mono tracking-wider"
-                        style="background: rgba(255,105,180,0.15); color: #ff69b4; border: 1px solid rgba(212,96,154,0.3)"
+                        style="background: rgba(27,141,255,0.15); color: #1B8DFF; border: 1px solid rgba(27,141,255,0.3)"
                         @click="show_add_wallet = true"
                     >
                         + ADD
@@ -87,8 +87,8 @@
                         :key="w.address"
                         class="rounded-xl p-3 flex items-center gap-3 cursor-pointer transition-all"
                         :style="idx === wm_activeIndex
-                            ? 'background: rgba(255,105,180,0.1); border: 1px solid rgba(212,96,154,0.35)'
-                            : 'background: rgba(30,15,25,0.6); border: 1px solid rgba(212,96,154,0.1)'"
+                            ? 'background: rgba(27,141,255,0.1); border: 1px solid rgba(27,141,255,0.35)'
+                            : 'background: rgba(5,13,26,0.6); border: 1px solid rgba(27,141,255,0.1)'"
                         @click="handleSwitchWallet(idx)"
                     >
                         <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
@@ -96,18 +96,18 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
-                                <span class="text-[11px] font-bold font-mono" style="color: #e8e8ff">{{ w.label }}</span>
-                                <span v-if="idx === wm_activeIndex" class="text-[8px] font-mono px-1.5 py-0.5 rounded" style="background: rgba(255,105,180,0.2); color: #ff69b4">ACTIVE</span>
+                                <span class="text-[11px] font-bold font-mono" style="color: #E0EEFF">{{ w.label }}</span>
+                                <span v-if="idx === wm_activeIndex" class="text-[8px] font-mono px-1.5 py-0.5 rounded" style="background: rgba(27,141,255,0.2); color: #1B8DFF">ACTIVE</span>
                             </div>
                             <div class="text-[11px] font-mono truncate mt-0.5" style="color: rgba(255,255,255,0.4)">{{ w.address }}</div>
                         </div>
                         <div class="flex items-center gap-1 flex-shrink-0">
                             <button
                                 class="p-1.5 rounded-lg"
-                                style="background: rgba(255,105,180,0.1)"
+                                style="background: rgba(27,141,255,0.1)"
                                 @click.stop="copySpecificAddress(w.address)"
                             >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1B8DFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
                             </button>
                             <button
                                 class="p-1.5 rounded-lg"
@@ -125,7 +125,7 @@
             <template v-if="wm_hasWallets">
             <div
                 class="rounded-2xl p-5 mb-4"
-                style="background: rgba(255,105,180,0.08); border: 1px solid rgba(212,96,154,0.25)"
+                style="background: rgba(27,141,255,0.08); border: 1px solid rgba(27,141,255,0.25)"
             >
                 <div class="flex items-center gap-2 mb-1">
                     <span class="text-[11px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">GAME SCORE</span>
@@ -134,13 +134,13 @@
                         target="_blank"
                         rel="noopener noreferrer"
                         class="text-[10px] font-mono tracking-wider underline"
-                        style="color: #ff69b4"
+                        style="color: #1B8DFF"
                     >ONCHAIN</a>
                 </div>
                 <div class="flex items-center justify-between">
-                    <div class="text-3xl font-bold font-mono" style="color: #ff69b4">${{ game_store.balance.toFixed(2) }}</div>
-                    <button class="flex items-center justify-center" style="color: #ff69b4" @click="handlePlusButton">
-                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+                    <div class="text-3xl font-bold font-mono" style="color: #1B8DFF">${{ game_store.balance.toFixed(2) }}</div>
+                    <button class="flex items-center justify-center" style="color: #1B8DFF" @click="handlePlusButton">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1B8DFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
                     </button>
                 </div>
                 <div class="text-[11px] font-mono mt-1" style="color: rgba(255,255,255,0.3)">{{ (game_store.total_pnl / 100).toFixed(2) }} P&amp;L</div>
@@ -151,21 +151,21 @@
                 <!-- Game Balance -->
                 <div
                     class="flex-1 rounded-xl p-4"
-                    style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.15)"
+                    style="background: rgba(5,13,26,0.8); border: 1px solid rgba(27,141,255,0.15)"
                 >
                     <div class="flex items-center gap-2 mb-2">
                         <div class="w-[14px] h-[14px] rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
                             <img src="/megaeth-logo.jpg" alt="MegaETH" class="w-full h-full object-cover" />
                         </div>
-                        <span class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">MegaETH <a href="https://megaeth-testnet-v2.blockscout.com/address/0x48345110dB117682E5a4EBdD99919Aff5b872D43" target="_blank" rel="noopener noreferrer" class="underline" style="color: #ff69b4">rUSD</a></span>
+                        <span class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">MegaETH <a href="https://megaeth-testnet-v2.blockscout.com/address/0x48345110dB117682E5a4EBdD99919Aff5b872D43" target="_blank" rel="noopener noreferrer" class="underline" style="color: #1B8DFF">rUSD</a></span>
                     </div>
-                    <div class="text-lg font-bold font-mono" style="color: #e8e8ff">${{ rusd_display }}</div>
+                    <div class="text-lg font-bold font-mono" style="color: #E0EEFF">${{ rusd_display }}</div>
                 </div>
 
                 <!-- On-Chain ETH Balance -->
                 <div
                     class="flex-1 rounded-xl p-4"
-                    style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.15)"
+                    style="background: rgba(5,13,26,0.8); border: 1px solid rgba(27,141,255,0.15)"
                 >
                     <div class="flex items-center gap-2 mb-2">
                         <div class="w-[14px] h-[14px] rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
@@ -173,7 +173,7 @@
                         </div>
                         <span class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">MegaETH ETH</span>
                     </div>
-                    <div class="text-lg font-bold font-mono" style="color: #e8e8ff">{{ eth_display }} ETH</div>
+                    <div class="text-lg font-bold font-mono" style="color: #E0EEFF">{{ eth_display }} ETH</div>
                 </div>
             </div>
 
@@ -182,7 +182,7 @@
                 <div class="text-[11px] font-mono tracking-wider mb-3" style="color: rgba(255,255,255,0.4)">WITHDRAW ETH</div>
                 <div
                     class="rounded-xl p-4"
-                    style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.15)"
+                    style="background: rgba(5,13,26,0.8); border: 1px solid rgba(27,141,255,0.15)"
                 >
                     <!-- Network badge -->
                     <div class="flex items-center gap-2 mb-4">
@@ -190,7 +190,7 @@
                             <img src="/megaeth-logo.jpg" alt="MegaETH" class="w-full h-full object-cover" />
                         </div>
                         <span class="text-[11px] font-mono" style="color: rgba(255,255,255,0.5)">MegaETH Testnet</span>
-                        <span class="text-[9px] font-mono px-1.5 py-0.5 rounded" style="background: rgba(255,105,180,0.15); color: #ff69b4">Ether</span>
+                        <span class="text-[9px] font-mono px-1.5 py-0.5 rounded" style="background: rgba(27,141,255,0.15); color: #1B8DFF">Ether</span>
                     </div>
 
                     <!-- Destination address input -->
@@ -201,7 +201,7 @@
                             type="text"
                             placeholder="0x..."
                             class="w-full rounded-lg px-3 py-2.5 text-[13px] font-mono outline-none"
-                            style="background: rgba(0,0,0,0.3); border: 1px solid rgba(212,96,154,0.2); color: #e8e8ff"
+                            style="background: rgba(0,0,0,0.3); border: 1px solid rgba(27,141,255,0.2); color: #E0EEFF"
                             :disabled="withdraw_loading"
                         />
                     </div>
@@ -212,7 +212,7 @@
                             <label class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.35)">AMOUNT (ETH)</label>
                             <button
                                 class="text-[10px] font-mono"
-                                style="color: #ff69b4"
+                                style="color: #1B8DFF"
                                 @click="setMaxAmount"
                             >
                                 MAX
@@ -224,7 +224,7 @@
                             inputmode="decimal"
                             placeholder="0.0"
                             class="w-full rounded-lg px-3 py-2.5 text-[13px] font-mono outline-none"
-                            style="background: rgba(0,0,0,0.3); border: 1px solid rgba(212,96,154,0.2); color: #e8e8ff"
+                            style="background: rgba(0,0,0,0.3); border: 1px solid rgba(27,141,255,0.2); color: #E0EEFF"
                             :disabled="withdraw_loading"
                         />
                         <div class="text-[10px] font-mono mt-1" style="color: rgba(255,255,255,0.25)">
@@ -256,7 +256,7 @@
                         target="_blank"
                         rel="noopener noreferrer"
                         class="mt-1 block text-[10px] font-mono text-center truncate underline"
-                        style="color: #ff69b4"
+                        style="color: #1B8DFF"
                     >
                         TX: {{ withdraw_tx }}
                     </a>
@@ -268,7 +268,7 @@
                 <div class="text-[11px] font-mono tracking-wider mb-3" style="color: rgba(255,255,255,0.4)">WITHDRAW rUSD</div>
                 <div
                     class="rounded-xl p-4"
-                    style="background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.15)"
+                    style="background: rgba(5,13,26,0.8); border: 1px solid rgba(27,141,255,0.15)"
                 >
                     <!-- Network badge -->
                     <div class="flex items-center gap-2 mb-4">
@@ -281,7 +281,7 @@
                             target="_blank"
                             rel="noopener noreferrer"
                             class="text-[9px] font-mono px-1.5 py-0.5 rounded underline"
-                            style="background: rgba(255,105,180,0.15); color: #ff69b4"
+                            style="background: rgba(27,141,255,0.15); color: #1B8DFF"
                         >rUSD</a>
                     </div>
 
@@ -293,7 +293,7 @@
                             type="text"
                             placeholder="0x..."
                             class="w-full rounded-lg px-3 py-2.5 text-[13px] font-mono outline-none"
-                            style="background: rgba(0,0,0,0.3); border: 1px solid rgba(212,96,154,0.2); color: #e8e8ff"
+                            style="background: rgba(0,0,0,0.3); border: 1px solid rgba(27,141,255,0.2); color: #E0EEFF"
                             :disabled="rusd_withdraw_loading"
                         />
                     </div>
@@ -304,7 +304,7 @@
                             <label class="text-[10px] font-mono tracking-wider" style="color: rgba(255,255,255,0.35)">AMOUNT (rUSD)</label>
                             <button
                                 class="text-[10px] font-mono"
-                                style="color: #ff69b4"
+                                style="color: #1B8DFF"
                                 @click="setMaxRusdAmount"
                             >
                                 MAX
@@ -316,7 +316,7 @@
                             inputmode="decimal"
                             placeholder="0.0"
                             class="w-full rounded-lg px-3 py-2.5 text-[13px] font-mono outline-none"
-                            style="background: rgba(0,0,0,0.3); border: 1px solid rgba(212,96,154,0.2); color: #e8e8ff"
+                            style="background: rgba(0,0,0,0.3); border: 1px solid rgba(27,141,255,0.2); color: #E0EEFF"
                             :disabled="rusd_withdraw_loading"
                         />
                         <div class="text-[10px] font-mono mt-1" style="color: rgba(255,255,255,0.25)">
@@ -348,7 +348,7 @@
                         target="_blank"
                         rel="noopener noreferrer"
                         class="mt-1 block text-[10px] font-mono text-center truncate underline"
-                        style="color: #ff69b4"
+                        style="color: #1B8DFF"
                     >
                         TX: {{ rusd_withdraw_tx }}
                     </a>
@@ -362,10 +362,10 @@
                     v-for="stat in stats"
                     :key="stat.label"
                     class="flex items-center justify-between py-2.5 border-b"
-                    style="border-color: rgba(212,96,154,0.1)"
+                    style="border-color: rgba(27,141,255,0.1)"
                 >
                     <span class="text-xs font-mono" style="color: rgba(255,255,255,0.5)">{{ stat.label }}</span>
-                    <span class="text-xs font-bold font-mono" :style="{ color: stat.color || '#e8e8ff' }">{{ stat.value }}</span>
+                    <span class="text-xs font-bold font-mono" :style="{ color: stat.color || '#E0EEFF' }">{{ stat.value }}</span>
                 </div>
             </div>
 
@@ -373,7 +373,7 @@
             <div>
                 <div class="text-[11px] font-mono tracking-wider mb-3" style="color: rgba(255,255,255,0.4)">RECENT ACTIVITY</div>
                 <div class="text-center py-8">
-                    <svg class="mx-auto mb-2" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(212,96,154,0.3)" stroke-width="1.5">
+                    <svg class="mx-auto mb-2" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(27,141,255,0.3)" stroke-width="1.5">
                         <path d="M12 8v4l3 3" /><circle cx="12" cy="12" r="10" />
                     </svg>
                     <p class="text-[11px] font-mono" style="color: rgba(255,255,255,0.25)">No recent activity</p>
@@ -390,7 +390,7 @@
                     <div class="absolute inset-0" style="background: rgba(0,0,0,0.75); backdrop-filter: blur(8px)" />
 
                     <!-- Modal Card -->
-                    <div class="relative w-[calc(100%-32px)] max-w-[340px] rounded-2xl p-5 sm:p-6" style="background: linear-gradient(145deg, #2a1020, #1a0a14); border: 1px solid rgba(212,96,154,0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,105,180,0.08)">
+                    <div class="relative w-[calc(100%-32px)] max-w-[340px] rounded-2xl p-5 sm:p-6" style="background: linear-gradient(145deg, #2a1020, #03080F); border: 1px solid rgba(27,141,255,0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(27,141,255,0.08)">
                         <!-- Close button -->
                         <button class="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full" style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4)" @click="closePurchaseModal">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -399,12 +399,12 @@
                         <!-- Title -->
                         <div class="mb-5">
                             <div class="text-[11px] font-mono tracking-wider mb-1" style="color: rgba(255,255,255,0.4)">ADD TO</div>
-                            <div class="text-xl font-bold font-mono" style="color: #ff69b4">GAME SCORE</div>
+                            <div class="text-xl font-bold font-mono" style="color: #1B8DFF">GAME SCORE</div>
                         </div>
 
                         <!-- Amount display -->
-                        <div class="text-center rounded-xl py-4 mb-5" style="background: rgba(255,105,180,0.06); border: 1px solid rgba(212,96,154,0.15)">
-                            <div class="text-3xl font-bold font-mono" style="color: #ff69b4">+$100</div>
+                        <div class="text-center rounded-xl py-4 mb-5" style="background: rgba(27,141,255,0.06); border: 1px solid rgba(27,141,255,0.15)">
+                            <div class="text-3xl font-bold font-mono" style="color: #1B8DFF">+$100</div>
                             <div class="text-[10px] font-mono mt-1" style="color: rgba(255,255,255,0.3)">GAME CREDITS</div>
                         </div>
 
@@ -414,19 +414,19 @@
                             <!-- rUSD option -->
                             <button
                                 class="w-full rounded-xl p-3.5 flex items-center gap-3 transition-all"
-                                :style="purchase_loading ? 'background: rgba(30,15,25,0.6); border: 1px solid rgba(212,96,154,0.1); cursor: wait; opacity: 0.5' : 'background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.2); cursor: pointer'"
+                                :style="purchase_loading ? 'background: rgba(5,13,26,0.6); border: 1px solid rgba(27,141,255,0.1); cursor: wait; opacity: 0.5' : 'background: rgba(5,13,26,0.8); border: 1px solid rgba(27,141,255,0.2); cursor: pointer'"
                                 :disabled="purchase_loading"
                                 @click="purchaseWithRusd"
                             >
-                                <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style="background: rgba(255,105,180,0.1); border: 1px solid rgba(212,96,154,0.2)">
-                                    <span class="text-[13px] font-bold font-mono" style="color: #ff69b4">$</span>
+                                <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style="background: rgba(27,141,255,0.1); border: 1px solid rgba(27,141,255,0.2)">
+                                    <span class="text-[13px] font-bold font-mono" style="color: #1B8DFF">$</span>
                                 </div>
                                 <div class="flex-1 text-left">
-                                    <div class="text-[13px] font-bold font-mono" style="color: #e8e8ff">5 rUSD</div>
+                                    <div class="text-[13px] font-bold font-mono" style="color: #E0EEFF">5 rUSD</div>
                                     <div class="text-[10px] font-mono" style="color: rgba(255,255,255,0.3)">Balance: {{ rusd_display }} rUSD</div>
                                 </div>
                                 <div v-if="purchase_loading && purchase_method === 'rusd'" class="flex-shrink-0">
-                                    <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4m-3.93 7.07l-2.83-2.83M7.76 7.76L4.93 4.93" /></svg>
+                                    <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B8DFF" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4m-3.93 7.07l-2.83-2.83M7.76 7.76L4.93 4.93" /></svg>
                                 </div>
                                 <div v-else class="flex-shrink-0">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
@@ -436,7 +436,7 @@
                             <!-- ETH option -->
                             <button
                                 class="w-full rounded-xl p-3.5 flex items-center gap-3 transition-all"
-                                :style="purchase_loading ? 'background: rgba(30,15,25,0.6); border: 1px solid rgba(212,96,154,0.1); cursor: wait; opacity: 0.5' : 'background: rgba(30,15,25,0.8); border: 1px solid rgba(212,96,154,0.2); cursor: pointer'"
+                                :style="purchase_loading ? 'background: rgba(5,13,26,0.6); border: 1px solid rgba(27,141,255,0.1); cursor: wait; opacity: 0.5' : 'background: rgba(5,13,26,0.8); border: 1px solid rgba(27,141,255,0.2); cursor: pointer'"
                                 :disabled="purchase_loading"
                                 @click="purchaseWithEth"
                             >
@@ -444,11 +444,11 @@
                                     <img src="/megaeth-logo.jpg" alt="ETH" class="w-full h-full object-cover" />
                                 </div>
                                 <div class="flex-1 text-left">
-                                    <div class="text-[13px] font-bold font-mono" style="color: #e8e8ff">0.0001 ETH</div>
+                                    <div class="text-[13px] font-bold font-mono" style="color: #E0EEFF">0.0001 ETH</div>
                                     <div class="text-[10px] font-mono" style="color: rgba(255,255,255,0.3)">Balance: {{ eth_display }} ETH</div>
                                 </div>
                                 <div v-if="purchase_loading && purchase_method === 'eth'" class="flex-shrink-0">
-                                    <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4m-3.93 7.07l-2.83-2.83M7.76 7.76L4.93 4.93" /></svg>
+                                    <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B8DFF" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4m-3.93 7.07l-2.83-2.83M7.76 7.76L4.93 4.93" /></svg>
                                 </div>
                                 <div v-else class="flex-shrink-0">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
@@ -465,7 +465,7 @@
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="mt-1 block text-[9px] font-mono truncate underline"
-                                style="color: #ff69b4"
+                                style="color: #1B8DFF"
                             >TX: {{ purchase_tx }}</a>
                         </div>
                     </div>
@@ -478,13 +478,13 @@
             <Transition name="modal">
                 <div v-if="show_delete_confirm" class="fixed inset-0 z-50 flex items-center justify-center" @click.self="cancelRemoveWallet">
                     <div class="absolute inset-0" style="background: rgba(0,0,0,0.75); backdrop-filter: blur(8px)" />
-                    <div class="relative w-[calc(100%-32px)] max-w-[300px] rounded-2xl p-5" style="background: linear-gradient(145deg, #2a1020, #1a0a14); border: 1px solid rgba(239,68,68,0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.5)">
+                    <div class="relative w-[calc(100%-32px)] max-w-[300px] rounded-2xl p-5" style="background: linear-gradient(145deg, #2a1020, #03080F); border: 1px solid rgba(239,68,68,0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.5)">
                         <div class="text-center mb-4">
                             <div class="text-[11px] font-mono tracking-wider mb-2" style="color: rgba(255,255,255,0.4)">CONFIRM</div>
                             <div class="text-[15px] font-bold font-mono" style="color: #ef4444">DELETE WALLET</div>
                         </div>
                         <div class="text-[12px] font-mono text-center mb-5" style="color: rgba(255,255,255,0.6)">
-                            Remove <span style="color: #ff69b4">{{ delete_target_label }}</span> ?
+                            Remove <span style="color: #1B8DFF">{{ delete_target_label }}</span> ?
                         </div>
                         <div class="flex gap-3">
                             <button
@@ -508,14 +508,14 @@
             <Transition name="modal">
                 <div v-if="show_add_wallet" class="fixed inset-0 z-50 flex items-center justify-center" @click.self="show_add_wallet = false">
                     <div class="absolute inset-0" style="background: rgba(0,0,0,0.75); backdrop-filter: blur(8px)" />
-                    <div class="relative w-[calc(100%-32px)] max-w-[340px] rounded-2xl p-5 sm:p-6" style="background: linear-gradient(145deg, #2a1020, #1a0a14); border: 1px solid rgba(212,96,154,0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,105,180,0.08)">
+                    <div class="relative w-[calc(100%-32px)] max-w-[340px] rounded-2xl p-5 sm:p-6" style="background: linear-gradient(145deg, #2a1020, #03080F); border: 1px solid rgba(27,141,255,0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(27,141,255,0.08)">
                         <button class="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full" style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4)" @click="show_add_wallet = false">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                         </button>
 
                         <div class="mb-5">
                             <div class="text-[11px] font-mono tracking-wider mb-1" style="color: rgba(255,255,255,0.4)">IMPORT</div>
-                            <div class="text-xl font-bold font-mono" style="color: #ff69b4">ADD WALLET</div>
+                            <div class="text-xl font-bold font-mono" style="color: #1B8DFF">ADD WALLET</div>
                         </div>
 
                         <div class="mb-3">
@@ -525,7 +525,7 @@
                                 type="text"
                                 placeholder="My Wallet"
                                 class="w-full rounded-lg px-3 py-2.5 text-[13px] font-mono outline-none"
-                                style="background: rgba(0,0,0,0.3); border: 1px solid rgba(212,96,154,0.2); color: #e8e8ff"
+                                style="background: rgba(0,0,0,0.3); border: 1px solid rgba(27,141,255,0.2); color: #E0EEFF"
                             />
                         </div>
 
@@ -536,15 +536,15 @@
                                 type="password"
                                 placeholder="0x..."
                                 class="w-full rounded-lg px-3 py-2.5 text-[13px] font-mono outline-none"
-                                style="background: rgba(0,0,0,0.3); border: 1px solid rgba(212,96,154,0.2); color: #e8e8ff"
+                                style="background: rgba(0,0,0,0.3); border: 1px solid rgba(27,141,255,0.2); color: #E0EEFF"
                             />
                         </div>
 
                         <button
                             class="w-full py-3 rounded-xl text-[13px] font-bold font-mono tracking-wider transition-all"
                             :style="new_wallet_pk.trim().length > 0
-                                ? 'background: rgba(255,105,180,0.25); color: #ff69b4; border: 1px solid rgba(212,96,154,0.4); cursor: pointer'
-                                : 'background: rgba(255,105,180,0.1); color: rgba(255,105,180,0.3); cursor: not-allowed'"
+                                ? 'background: rgba(27,141,255,0.25); color: #1B8DFF; border: 1px solid rgba(27,141,255,0.4); cursor: pointer'
+                                : 'background: rgba(27,141,255,0.1); color: rgba(27,141,255,0.3); cursor: not-allowed'"
                             :disabled="new_wallet_pk.trim().length === 0 || add_wallet_loading"
                             @click="handleAddWallet"
                         >
@@ -652,12 +652,12 @@ const can_withdraw = computed(() => {
 
 const withdraw_button_style = computed(() => {
     if (withdraw_loading.value) {
-        return "background: rgba(255,105,180,0.2); color: rgba(255,105,180,0.6); cursor: wait"
+        return "background: rgba(27,141,255,0.2); color: rgba(27,141,255,0.6); cursor: wait"
     }
     if (!can_withdraw.value) {
-        return "background: rgba(255,105,180,0.1); color: rgba(255,105,180,0.3); cursor: not-allowed"
+        return "background: rgba(27,141,255,0.1); color: rgba(27,141,255,0.3); cursor: not-allowed"
     }
-    return "background: rgba(255,105,180,0.25); color: #ff69b4; border: 1px solid rgba(212,96,154,0.4); cursor: pointer"
+    return "background: rgba(27,141,255,0.25); color: #1B8DFF; border: 1px solid rgba(27,141,255,0.4); cursor: pointer"
 })
 
 const can_withdraw_rusd = computed(() => {
@@ -671,12 +671,12 @@ const can_withdraw_rusd = computed(() => {
 
 const rusd_withdraw_button_style = computed(() => {
     if (rusd_withdraw_loading.value) {
-        return "background: rgba(255,105,180,0.2); color: rgba(255,105,180,0.6); cursor: wait"
+        return "background: rgba(27,141,255,0.2); color: rgba(27,141,255,0.6); cursor: wait"
     }
     if (!can_withdraw_rusd.value) {
-        return "background: rgba(255,105,180,0.1); color: rgba(255,105,180,0.3); cursor: not-allowed"
+        return "background: rgba(27,141,255,0.1); color: rgba(27,141,255,0.3); cursor: not-allowed"
     }
-    return "background: rgba(255,105,180,0.25); color: #ff69b4; border: 1px solid rgba(212,96,154,0.4); cursor: pointer"
+    return "background: rgba(27,141,255,0.25); color: #1B8DFF; border: 1px solid rgba(27,141,255,0.4); cursor: pointer"
 })
 
 // Load balance if not already loaded
@@ -915,7 +915,7 @@ async function purchaseWithRusd() {
     purchase_loading.value = true
     purchase_method.value = "rusd"
     purchase_status.value = "Sending transaction..."
-    purchase_status_color.value = "#ff69b4"
+    purchase_status_color.value = "#1B8DFF"
     purchase_tx.value = ""
     try {
         const hash = await purchaseCreditsWithRusd()
@@ -945,7 +945,7 @@ async function purchaseWithEth() {
     purchase_loading.value = true
     purchase_method.value = "eth"
     purchase_status.value = "Sending transaction..."
-    purchase_status_color.value = "#ff69b4"
+    purchase_status_color.value = "#1B8DFF"
     purchase_tx.value = ""
     try {
         const hash = await purchaseCreditsWithEth()
@@ -969,7 +969,7 @@ const stats = computed(() => [
     { label: "Total Bets", value: String(game_store.total_bets) },
     { label: "Wins", value: String(game_store.total_wins), color: "#22c55e" },
     { label: "Losses", value: String(game_store.total_losses), color: "#ef4444" },
-    { label: "Win Rate", value: `${game_store.win_rate}%`, color: "#ff69b4" },
+    { label: "Win Rate", value: `${game_store.win_rate}%`, color: "#1B8DFF" },
     { label: "Best Streak", value: String(game_store.best_streak) },
     {
         label: "Total P&L",

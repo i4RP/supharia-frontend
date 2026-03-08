@@ -130,7 +130,7 @@ function goBack() {
 .error-page {
     position: fixed;
     inset: 0;
-    background: #0a0a14;
+    background: #03080F;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -143,8 +143,8 @@ function goBack() {
     position: absolute;
     inset: 0;
     background-image:
-        linear-gradient(rgba(255, 105, 180, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 105, 180, 0.03) 1px, transparent 1px);
+        linear-gradient(rgba(27, 141, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(27, 141, 255, 0.03) 1px, transparent 1px);
     background-size: 40px 40px;
     animation: gridMove 20s linear infinite;
 }
@@ -178,7 +178,7 @@ function goBack() {
 
 .particle {
     position: absolute;
-    background: #ff69b4;
+    background: #1B8DFF;
     border-radius: 50%;
     opacity: 0;
     animation: particleFloat linear infinite;
@@ -207,11 +207,11 @@ function goBack() {
 .glitch-text {
     font-size: clamp(80px, 20vw, 180px);
     font-weight: 900;
-    color: #ff69b4;
+    color: #1B8DFF;
     text-shadow:
-        0 0 10px rgba(255, 105, 180, 0.5),
-        0 0 40px rgba(255, 105, 180, 0.3),
-        0 0 80px rgba(255, 105, 180, 0.1);
+        0 0 10px rgba(27, 141, 255, 0.5),
+        0 0 40px rgba(27, 141, 255, 0.3),
+        0 0 80px rgba(27, 141, 255, 0.1);
     position: relative;
     animation: textFlicker 4s infinite;
     letter-spacing: 0.1em;
@@ -276,12 +276,12 @@ function goBack() {
 }
 
 .bracket {
-    color: #d4609a;
+    color: #4DA6FF;
 }
 
 .status-code {
-    color: #ff69b4;
-    text-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
+    color: #1B8DFF;
+    text-shadow: 0 0 10px rgba(27, 141, 255, 0.5);
     animation: statusPulse 2s ease-in-out infinite;
 }
 
@@ -292,8 +292,8 @@ function goBack() {
 
 /* ===== Terminal ===== */
 .terminal {
-    background: rgba(255, 105, 180, 0.03);
-    border: 1px solid rgba(255, 105, 180, 0.15);
+    background: rgba(27, 141, 255, 0.03);
+    border: 1px solid rgba(27, 141, 255, 0.15);
     border-radius: 8px;
     padding: 16px 20px;
     margin: 0 auto 32px;
@@ -311,12 +311,12 @@ function goBack() {
 }
 
 .prompt {
-    color: #d4609a;
+    color: #4DA6FF;
     font-weight: bold;
 }
 
 .cmd {
-    color: #ff69b4;
+    color: #1B8DFF;
 }
 
 .path {
@@ -337,7 +337,7 @@ function goBack() {
     display: inline-block;
     width: 8px;
     height: 14px;
-    background: #ff69b4;
+    background: #1B8DFF;
     animation: cursorBlink 1s step-end infinite;
     vertical-align: middle;
     margin-left: 2px;
@@ -361,8 +361,8 @@ function goBack() {
     position: relative;
     padding: 12px 28px;
     background: transparent;
-    border: 1px solid rgba(255, 105, 180, 0.3);
-    color: #ff69b4;
+    border: 1px solid rgba(27, 141, 255, 0.3);
+    color: #1B8DFF;
     font-family: 'Courier New', monospace;
     font-size: clamp(11px, 2vw, 13px);
     font-weight: bold;
@@ -375,20 +375,20 @@ function goBack() {
 }
 
 .cyber-btn:hover {
-    background: rgba(255, 105, 180, 0.1);
-    border-color: rgba(255, 105, 180, 0.6);
-    text-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
-    box-shadow: 0 0 20px rgba(255, 105, 180, 0.1);
+    background: rgba(27, 141, 255, 0.1);
+    border-color: rgba(27, 141, 255, 0.6);
+    text-shadow: 0 0 10px rgba(27, 141, 255, 0.5);
+    box-shadow: 0 0 20px rgba(27, 141, 255, 0.1);
 }
 
 .cyber-btn.primary {
-    background: rgba(255, 105, 180, 0.1);
-    border-color: rgba(255, 105, 180, 0.5);
+    background: rgba(27, 141, 255, 0.1);
+    border-color: rgba(27, 141, 255, 0.5);
 }
 
 .cyber-btn.primary:hover {
-    background: rgba(255, 105, 180, 0.2);
-    border-color: #ff69b4;
+    background: rgba(27, 141, 255, 0.2);
+    border-color: #1B8DFF;
 }
 
 .btn-glitch {
@@ -414,8 +414,8 @@ function goBack() {
     right: -1px;
     width: 12px;
     height: 12px;
-    border-top: 2px solid #ff69b4;
-    border-right: 2px solid #ff69b4;
+    border-top: 2px solid #1B8DFF;
+    border-right: 2px solid #1B8DFF;
     transform: rotate(45deg) translate(-3px, 3px);
     opacity: 0.5;
 }
@@ -423,7 +423,7 @@ function goBack() {
 /* ===== Hex Decoration ===== */
 .hex-line {
     font-size: 9px;
-    color: rgba(212, 96, 154, 0.15);
+    color: rgba(27, 141, 255, 0.15);
     letter-spacing: 0.2em;
     max-width: 600px;
     margin: 0 auto;
@@ -442,29 +442,29 @@ function goBack() {
 .corner-tl {
     top: 20px;
     left: 20px;
-    border-top: 2px solid rgba(255, 105, 180, 0.3);
-    border-left: 2px solid rgba(255, 105, 180, 0.3);
+    border-top: 2px solid rgba(27, 141, 255, 0.3);
+    border-left: 2px solid rgba(27, 141, 255, 0.3);
 }
 
 .corner-tr {
     top: 20px;
     right: 20px;
-    border-top: 2px solid rgba(255, 105, 180, 0.3);
-    border-right: 2px solid rgba(255, 105, 180, 0.3);
+    border-top: 2px solid rgba(27, 141, 255, 0.3);
+    border-right: 2px solid rgba(27, 141, 255, 0.3);
 }
 
 .corner-bl {
     bottom: 20px;
     left: 20px;
-    border-bottom: 2px solid rgba(255, 105, 180, 0.3);
-    border-left: 2px solid rgba(255, 105, 180, 0.3);
+    border-bottom: 2px solid rgba(27, 141, 255, 0.3);
+    border-left: 2px solid rgba(27, 141, 255, 0.3);
 }
 
 .corner-br {
     bottom: 20px;
     right: 20px;
-    border-bottom: 2px solid rgba(255, 105, 180, 0.3);
-    border-right: 2px solid rgba(255, 105, 180, 0.3);
+    border-bottom: 2px solid rgba(27, 141, 255, 0.3);
+    border-right: 2px solid rgba(27, 141, 255, 0.3);
 }
 
 /* ===== Data Streams ===== */
@@ -492,14 +492,14 @@ function goBack() {
 
 .data-bit {
     font-size: 9px;
-    color: rgba(212, 96, 154, 0.12);
+    color: rgba(27, 141, 255, 0.12);
     font-family: 'Courier New', monospace;
     animation: dataPulse 3s ease-in-out infinite;
 }
 
 @keyframes dataPulse {
     0%, 100% { opacity: 0.1; }
-    50% { opacity: 0.4; color: rgba(255, 105, 180, 0.25); }
+    50% { opacity: 0.4; color: rgba(27, 141, 255, 0.25); }
 }
 
 /* ===== Mobile adjustments ===== */

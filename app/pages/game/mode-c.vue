@@ -1,9 +1,9 @@
 <template>
-    <div class="absolute inset-0 top-0 flex flex-col" style="background: #1a0a14">
+    <div class="absolute inset-0 top-0 flex flex-col" style="background: #03080F">
         <!-- Top Bar -->
         <div class="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 pt-[env(safe-area-inset-top,8px)] pb-1">
             <!-- ETH Price Pill -->
-            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full" style="background: rgba(30,15,25,0.9); border: 1px solid rgba(212,96,154,0.3)">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full" style="background: rgba(5,13,26,0.9); border: 1px solid rgba(27,141,255,0.3)">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                     <circle cx="9" cy="9" r="9" fill="#627EEA" />
                     <path d="M9 2.5L9 7.5L13 9L9 2.5Z" fill="#C0CBF6" />
@@ -24,7 +24,7 @@
                 >
                     {{ game_store.is_connected ? "LIVE" : "OFFLINE" }}
                 </span>
-                <div class="flex items-center gap-1 px-2 py-1.5 rounded-full" style="background: rgba(30,15,25,0.9); border: 1px solid rgba(212,96,154,0.3)">
+                <div class="flex items-center gap-1 px-2 py-1.5 rounded-full" style="background: rgba(5,13,26,0.9); border: 1px solid rgba(27,141,255,0.3)">
                     <button class="p-1 text-white/60 hover:text-white transition-colors" @click="resetAndRestart">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
                     </button>
@@ -43,14 +43,14 @@
         <!-- Bottom Controls -->
         <div class="absolute bottom-[52px] left-0 right-0 z-10 flex items-center justify-between px-3 pb-1">
             <!-- Balance Pill -->
-            <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background: rgba(30,15,25,0.9); border: 1px solid rgba(212,96,154,0.3)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 10H18a2 2 0 0 0 0 4h4" /></svg>
+            <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background: rgba(5,13,26,0.9); border: 1px solid rgba(27,141,255,0.3)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B8DFF" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 10H18a2 2 0 0 0 0 4h4" /></svg>
                 <span class="text-white font-bold text-sm font-mono">${{ game_store.balance.toFixed(2) }}</span>
             </div>
 
             <!-- Bet Cost Pill -->
-            <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background: rgba(30,15,25,0.9); border: 1px solid rgba(212,96,154,0.3)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 10h8M8 14h8" /></svg>
+            <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background: rgba(5,13,26,0.9); border: 1px solid rgba(27,141,255,0.3)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B8DFF" stroke-width="2"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 10h8M8 14h8" /></svg>
                 <span class="text-white font-bold text-sm font-mono">${{ bet_cost }}</span>
             </div>
         </div>

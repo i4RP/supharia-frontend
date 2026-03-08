@@ -1,8 +1,8 @@
 export const GAME_COLORS = {
-    BACKGROUND: "#120e23",
-    BACKGROUND_GRID: "#152132",
-    ORDER_GRID: "#88a4ca",
-    ORDER_CELL: "#ffdf3d",
+    BACKGROUND: "#03080F",
+    BACKGROUND_GRID: "#0A2040",
+    ORDER_GRID: "#4DA6FF",
+    ORDER_CELL: "#1B8DFF",
     PRICE_LINE: "#22c55e",
     CHART_HEAD: "#ffffff",
     WON_CELL: "#22c55e",

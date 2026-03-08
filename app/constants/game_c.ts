@@ -1,19 +1,19 @@
 /** Mode C (Practice) — local off-chain game constants */
 
 export const GAME_C_COLORS = {
-    BACKGROUND: "#1a0a14",
-    BACKGROUND_GRID: "#2a1520",
-    ORDER_GRID: "#d4609a",
-    ORDER_CELL: "#ff69b4",
+    BACKGROUND: "#03080F",
+    BACKGROUND_GRID: "#0A2040",
+    ORDER_GRID: "#1B8DFF",
+    ORDER_CELL: "#1B8DFF",
     PRICE_LINE: "#ffffff",
-    PRICE_LINE_TRAIL: "#ff69b4",
+    PRICE_LINE_TRAIL: "#1B8DFF",
     CHART_HEAD: "#ffffff",
     WON_CELL: "#22c55e",
     LOST_CELL: "#ef4444",
-    MULTIPLIER_TEXT: "#ff69b4",
-    PRICE_LABEL: "#d4609a",
-    TIME_LABEL: "#d4609a",
-    GRID_DOT: "#d4609a",
+    MULTIPLIER_TEXT: "#1B8DFF",
+    PRICE_LABEL: "#4DA6FF",
+    TIME_LABEL: "#4DA6FF",
+    GRID_DOT: "#4DA6FF",
 } as const
 
 export const GAME_C_GRID = {

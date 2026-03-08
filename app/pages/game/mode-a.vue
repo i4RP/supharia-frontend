@@ -65,7 +65,7 @@
                 </svg>
             </span>
             <!-- Total Balance Amount -->
-            <span class="text-base font-bold tracking-wide" style="color: #E8E8FF">
+            <span class="text-base font-bold tracking-wide" style="color: #E0EEFF">
                 {{ total_wallet_balance.toFixed(2) }} rUSD
             </span>
         </button>
@@ -78,7 +78,7 @@
         >
             <!-- Panel Header -->
             <div class="flex items-center justify-between px-4 pt-4 pb-2">
-                <span class="text-sm font-bold tracking-wider" style="color: #E8E8FF">Wallet</span>
+                <span class="text-sm font-bold tracking-wider" style="color: #E0EEFF">Wallet</span>
                 <button
                     class="w-6 h-6 flex items-center justify-center rounded-full text-xs"
                     style="background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4)"
@@ -98,15 +98,15 @@
                     <div class="flex items-center gap-2.5">
                         <span
                             class="flex items-center justify-center w-8 h-8 rounded-lg text-xs font-bold"
-                            style="background: linear-gradient(135deg, #00D4FF 0%, #627EEA 100%); color: #0a0a14"
+                            style="background: linear-gradient(135deg, #00D4FF 0%, #627EEA 100%); color: #03080F"
                         >ETH</span>
                         <div>
-                            <div class="text-xs font-bold" style="color: #E8E8FF">MegaETH</div>
+                            <div class="text-xs font-bold" style="color: #E0EEFF">MegaETH</div>
                             <div class="text-[10px]" style="color: rgba(255,255,255,0.35)">testnet</div>
                         </div>
                     </div>
                     <div class="text-right">
-                        <div class="text-sm font-bold" style="color: #E8E8FF">{{ game_store.balance.toFixed(2) }} rUSD</div>
+                        <div class="text-sm font-bold" style="color: #E0EEFF">{{ game_store.balance.toFixed(2) }} rUSD</div>
                         <div class="text-[10px]" style="color: rgba(255,255,255,0.35)">on-chain</div>
                     </div>
                 </div>

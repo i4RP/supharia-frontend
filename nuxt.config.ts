@@ -20,8 +20,8 @@ export default defineNuxtConfig({
             name: "MPARA - Tap Trading",
             short_name: "MPARA",
             description: "Trade at the Speed of Air",
-            theme_color: "#0A0A14",
-            background_color: "#0A0A14",
+            theme_color: "#03080F",
+            background_color: "#03080F",
             display: "standalone",
             orientation: "portrait",
             start_url: "/game",
@@ -61,7 +61,7 @@ export default defineNuxtConfig({
     app: {
         head: {
             meta: [
-                { name: "theme-color", content: "#0A0A14" },
+                { name: "theme-color", content: "#03080F" },
                 { name: "apple-mobile-web-app-capable", content: "yes" },
                 { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
                 { name: "apple-mobile-web-app-title", content: "MPARA" },
