@@ -112,7 +112,7 @@
                             <button
                                 class="p-1.5 rounded-lg"
                                 style="background: rgba(239,68,68,0.1)"
-                                @click.stop="handleRemoveWallet(idx)"
+                                @click.stop="confirmRemoveWallet(idx)"
                             >
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                             </button>
@@ -473,6 +473,36 @@
             </Transition>
         </Teleport>
 
+        <!-- Delete Wallet Confirmation Modal -->
+        <Teleport to="body">
+            <Transition name="modal">
+                <div v-if="show_delete_confirm" class="fixed inset-0 z-50 flex items-center justify-center" @click.self="cancelRemoveWallet">
+                    <div class="absolute inset-0" style="background: rgba(0,0,0,0.75); backdrop-filter: blur(8px)" />
+                    <div class="relative w-[calc(100%-32px)] max-w-[300px] rounded-2xl p-5" style="background: linear-gradient(145deg, #2a1020, #1a0a14); border: 1px solid rgba(239,68,68,0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.5)">
+                        <div class="text-center mb-4">
+                            <div class="text-[11px] font-mono tracking-wider mb-2" style="color: rgba(255,255,255,0.4)">CONFIRM</div>
+                            <div class="text-[15px] font-bold font-mono" style="color: #ef4444">DELETE WALLET</div>
+                        </div>
+                        <div class="text-[12px] font-mono text-center mb-5" style="color: rgba(255,255,255,0.6)">
+                            Remove <span style="color: #ff69b4">{{ delete_target_label }}</span> ?
+                        </div>
+                        <div class="flex gap-3">
+                            <button
+                                class="flex-1 py-2.5 rounded-xl text-[12px] font-bold font-mono tracking-wider"
+                                style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1)"
+                                @click="cancelRemoveWallet"
+                            >CANCEL</button>
+                            <button
+                                class="flex-1 py-2.5 rounded-xl text-[12px] font-bold font-mono tracking-wider"
+                                style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.4)"
+                                @click="handleRemoveWallet"
+                            >DELETE</button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
         <!-- Add Wallet Modal -->
         <Teleport to="body">
             <Transition name="modal">
@@ -577,6 +607,11 @@ const new_wallet_generated = ref(false)
 const generated_pk = ref("")
 const generated_address = ref("")
 const empty_wallet_error = ref("")
+
+// Delete confirmation
+const show_delete_confirm = ref(false)
+const delete_target_idx = ref(-1)
+const delete_target_label = ref("")
 
 // ETH balance
 const eth_balance = ref("0")
@@ -739,7 +774,23 @@ async function handleSwitchWallet(idx: number) {
     await afterWalletChanged()
 }
 
-function handleRemoveWallet(idx: number) {
+function confirmRemoveWallet(idx: number) {
+    delete_target_idx.value = idx
+    delete_target_label.value = wm_wallets.value[idx]?.label || `Wallet ${idx + 1}`
+    show_delete_confirm.value = true
+}
+
+function cancelRemoveWallet() {
+    show_delete_confirm.value = false
+    delete_target_idx.value = -1
+}
+
+function handleRemoveWallet() {
+    const idx = delete_target_idx.value
+    if (idx < 0) return
+    show_delete_confirm.value = false
+    delete_target_idx.value = -1
+
     const wasActive = idx === wm_activeIndex.value
     wm_removeWallet(idx)
 
