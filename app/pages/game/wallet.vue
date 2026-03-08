@@ -8,25 +8,57 @@
 
         <!-- Content -->
         <div class="flex-1 overflow-y-auto px-4 pb-[80px]">
-            <!-- Address Card -->
-            <div
-                class="rounded-2xl p-4 mb-4 flex items-center gap-3"
-                style="background: rgba(255,105,180,0.05); border: 1px solid rgba(212,96,154,0.2)"
-            >
-                <div class="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
-                    <img src="/megaeth-logo.jpg" alt="MegaETH" class="w-full h-full object-cover" />
+            <!-- Wallet List Section -->
+            <div class="mb-4">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-[11px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">WALLETS</div>
+                    <button
+                        class="px-2.5 py-1 rounded-lg text-[10px] font-mono tracking-wider"
+                        style="background: rgba(255,105,180,0.15); color: #ff69b4; border: 1px solid rgba(212,96,154,0.3)"
+                        @click="show_add_wallet = true"
+                    >
+                        + ADD
+                    </button>
                 </div>
-                <div class="flex-1 min-w-0">
-                    <div class="text-[10px] font-mono tracking-wider mb-0.5" style="color: rgba(255,255,255,0.4)">MegaETH ADDRESS</div>
-                    <div class="text-[13px] font-mono truncate" style="color: #e8e8ff">{{ wallet_address }}</div>
+                <div class="flex flex-col gap-2">
+                    <div
+                        v-for="(w, idx) in wm_wallets"
+                        :key="w.address"
+                        class="rounded-xl p-3 flex items-center gap-3 cursor-pointer transition-all"
+                        :style="idx === wm_activeIndex
+                            ? 'background: rgba(255,105,180,0.1); border: 1px solid rgba(212,96,154,0.35)'
+                            : 'background: rgba(30,15,25,0.6); border: 1px solid rgba(212,96,154,0.1)'"
+                        @click="handleSwitchWallet(idx)"
+                    >
+                        <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
+                            <img src="/megaeth-logo.jpg" alt="MegaETH" class="w-full h-full object-cover" />
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-bold font-mono" style="color: #e8e8ff">{{ w.label }}</span>
+                                <span v-if="idx === wm_activeIndex" class="text-[8px] font-mono px-1.5 py-0.5 rounded" style="background: rgba(255,105,180,0.2); color: #ff69b4">ACTIVE</span>
+                            </div>
+                            <div class="text-[11px] font-mono truncate mt-0.5" style="color: rgba(255,255,255,0.4)">{{ w.address }}</div>
+                        </div>
+                        <div class="flex items-center gap-1 flex-shrink-0">
+                            <button
+                                class="p-1.5 rounded-lg"
+                                style="background: rgba(255,105,180,0.1)"
+                                @click.stop="copySpecificAddress(w.address)"
+                            >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
+                            </button>
+                            <button
+                                v-if="wm_wallets.length > 1"
+                                class="p-1.5 rounded-lg"
+                                style="background: rgba(239,68,68,0.1)"
+                                @click.stop="handleRemoveWallet(idx)"
+                            >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <button
-                    class="flex-shrink-0 px-2.5 py-1.5 rounded-lg text-[10px] font-mono tracking-wider"
-                    style="background: rgba(255,105,180,0.15); color: #ff69b4; border: 1px solid rgba(212,96,154,0.3)"
-                    @click="copyAddress"
-                >
-                    {{ copy_label }}
-                </button>
             </div>
 
             <!-- Total Balance Card -->
@@ -378,17 +410,87 @@
                 </div>
             </Transition>
         </Teleport>
+
+        <!-- Add Wallet Modal -->
+        <Teleport to="body">
+            <Transition name="modal">
+                <div v-if="show_add_wallet" class="fixed inset-0 z-50 flex items-center justify-center" @click.self="show_add_wallet = false">
+                    <div class="absolute inset-0" style="background: rgba(0,0,0,0.75); backdrop-filter: blur(8px)" />
+                    <div class="relative w-[340px] rounded-2xl p-6" style="background: linear-gradient(145deg, #2a1020, #1a0a14); border: 1px solid rgba(212,96,154,0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,105,180,0.08)">
+                        <button class="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full" style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4)" @click="show_add_wallet = false">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                        </button>
+
+                        <div class="mb-5">
+                            <div class="text-[11px] font-mono tracking-wider mb-1" style="color: rgba(255,255,255,0.4)">IMPORT</div>
+                            <div class="text-xl font-bold font-mono" style="color: #ff69b4">ADD WALLET</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="text-[10px] font-mono tracking-wider block mb-1.5" style="color: rgba(255,255,255,0.35)">LABEL (OPTIONAL)</label>
+                            <input
+                                v-model="new_wallet_label"
+                                type="text"
+                                placeholder="My Wallet"
+                                class="w-full rounded-lg px-3 py-2.5 text-[13px] font-mono outline-none"
+                                style="background: rgba(0,0,0,0.3); border: 1px solid rgba(212,96,154,0.2); color: #e8e8ff"
+                            />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="text-[10px] font-mono tracking-wider block mb-1.5" style="color: rgba(255,255,255,0.35)">PRIVATE KEY</label>
+                            <input
+                                v-model="new_wallet_pk"
+                                type="password"
+                                placeholder="0x..."
+                                class="w-full rounded-lg px-3 py-2.5 text-[13px] font-mono outline-none"
+                                style="background: rgba(0,0,0,0.3); border: 1px solid rgba(212,96,154,0.2); color: #e8e8ff"
+                            />
+                        </div>
+
+                        <button
+                            class="w-full py-3 rounded-xl text-[13px] font-bold font-mono tracking-wider transition-all"
+                            :style="new_wallet_pk.trim().length > 0
+                                ? 'background: rgba(255,105,180,0.25); color: #ff69b4; border: 1px solid rgba(212,96,154,0.4); cursor: pointer'
+                                : 'background: rgba(255,105,180,0.1); color: rgba(255,105,180,0.3); cursor: not-allowed'"
+                            :disabled="new_wallet_pk.trim().length === 0 || add_wallet_loading"
+                            @click="handleAddWallet"
+                        >
+                            <span v-if="add_wallet_loading" class="flex items-center justify-center gap-2">
+                                <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4m-3.93 7.07l-2.83-2.83M7.76 7.76L4.93 4.93" /></svg>
+                                IMPORTING...
+                            </span>
+                            <span v-else>IMPORT WALLET</span>
+                        </button>
+
+                        <div v-if="add_wallet_error" class="mt-3 text-[11px] font-mono text-center" style="color: #ef4444">
+                            {{ add_wallet_error }}
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </div>
 </template>
 
 <script setup lang="ts">
+import { resetWalletClient } from '~/composables/useOnChain'
+
 const game_store = useGameStoreC()
 const { getAddress, fetchEthBalance, withdrawEth, fetchRusdBalance, withdrawRusd, purchaseCreditsWithRusd, purchaseCreditsWithEth } = useOnChain()
 const { restoreBalance } = useBatchSettlement()
+const { wallets: wm_wallets, activeIndex: wm_activeIndex, activeWallet: wm_activeWallet, addWallet: wm_addWallet, removeWallet: wm_removeWallet, switchWallet: wm_switchWallet } = useWalletManager()
 
 // Wallet address
 const wallet_address = ref("")
 const copy_label = ref("COPY")
+
+// Add wallet modal state
+const show_add_wallet = ref(false)
+const new_wallet_pk = ref("")
+const new_wallet_label = ref("")
+const add_wallet_error = ref("")
+const add_wallet_loading = ref(false)
 
 // ETH balance
 const eth_balance = ref("0")
@@ -461,6 +563,10 @@ onMounted(async () => {
     if (!game_store.balance_loaded) {
         game_store.loadBalance()
     }
+    await refreshBalances()
+})
+
+async function refreshBalances() {
     try {
         wallet_address.value = getAddress()
         eth_balance.value = await fetchEthBalance()
@@ -469,7 +575,7 @@ onMounted(async () => {
     catch (e) {
         console.warn("[Wallet] Failed to load balances:", e)
     }
-})
+}
 
 function copyAddress() {
     if (!wallet_address.value) return
@@ -479,6 +585,50 @@ function copyAddress() {
     }).catch(() => {
         copy_label.value = "COPY"
     })
+}
+
+function copySpecificAddress(addr: string) {
+    navigator.clipboard.writeText(addr).catch(() => {})
+}
+
+async function handleSwitchWallet(idx: number) {
+    if (idx === wm_activeIndex.value) return
+    wm_switchWallet(idx)
+    resetWalletClient()
+    await refreshBalances()
+    // Reload game balance for new wallet
+    game_store.balance_loaded = false
+    game_store.loadBalance()
+}
+
+function handleRemoveWallet(idx: number) {
+    if (wm_wallets.value.length <= 1) return
+    const wasActive = idx === wm_activeIndex.value
+    wm_removeWallet(idx)
+    if (wasActive) {
+        resetWalletClient()
+        refreshBalances()
+        game_store.balance_loaded = false
+        game_store.loadBalance()
+    }
+}
+
+async function handleAddWallet() {
+    add_wallet_error.value = ""
+    add_wallet_loading.value = true
+    try {
+        const addr = wm_addWallet(new_wallet_pk.value, new_wallet_label.value || undefined)
+        console.log("[Wallet] Added wallet:", addr)
+        new_wallet_pk.value = ""
+        new_wallet_label.value = ""
+        show_add_wallet.value = false
+    }
+    catch (e: unknown) {
+        add_wallet_error.value = e instanceof Error ? e.message : "Invalid private key"
+    }
+    finally {
+        add_wallet_loading.value = false
+    }
 }
 
 function setMaxAmount() {

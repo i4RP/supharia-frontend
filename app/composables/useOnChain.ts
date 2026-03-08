@@ -1,6 +1,7 @@
 import { createPublicClient, createWalletClient, http, parseAbi, formatUnits, parseEther, parseUnits } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import type { PublicClient, WalletClient, Account } from "viem"
+import { useWalletManager } from "~/composables/useWalletManager"
 
 // MegaETH testnet chain definition
 const megaETH = {
@@ -15,15 +16,22 @@ const megaETH = {
 const POOL_ADDRESS = "0x627B45ad772f4069542D2CA08E320e3e7dA582cD" as const
 const RUSD_ADDRESS = "0x48345110dB117682E5a4EBdD99919Aff5b872D43" as const
 const LEADERBOARD_ADDRESS = "0x3f781931748e20cd5537f0f223d0ceaa310b9338" as const
-// Private key loaded from runtime config (NUXT_PUBLIC_DEV_PRIVATE_KEY env var)
-function getDevPrivateKey(): `0x${string}` {
-    if (typeof useRuntimeConfig !== "undefined") {
-        const config = useRuntimeConfig()
-        if (config.public?.devPrivateKey) {
-            return config.public.devPrivateKey as `0x${string}`
-        }
+// Private key loaded from wallet manager (supports multiple wallets)
+function getActivePrivateKey(): `0x${string}` {
+    try {
+        const { getActivePrivateKey: getPK } = useWalletManager()
+        return getPK()
     }
-    return "0x0" as `0x${string}`
+    catch {
+        // Fallback to runtime config if wallet manager not available
+        if (typeof useRuntimeConfig !== "undefined") {
+            const config = useRuntimeConfig()
+            if (config.public?.devPrivateKey) {
+                return config.public.devPrivateKey as `0x${string}`
+            }
+        }
+        return "0x0" as `0x${string}`
+    }
 }
 
 // Minimal ABIs for the contracts we interact with
@@ -108,6 +116,7 @@ export interface OnChainBet {
 let _publicClient: PublicClient | null = null
 let _walletClient: WalletClient | null = null
 let _account: Account | null = null
+let _lastPrivateKey: string | null = null
 
 function getPublicClient(): PublicClient {
     if (!_publicClient) {
@@ -120,15 +129,25 @@ function getPublicClient(): PublicClient {
 }
 
 function getWalletClient(): { wallet: WalletClient; account: Account } {
-    if (!_walletClient || !_account) {
-        _account = privateKeyToAccount(getDevPrivateKey())
+    const pk = getActivePrivateKey()
+    // Recreate wallet client if private key changed (wallet switch)
+    if (!_walletClient || !_account || _lastPrivateKey !== pk) {
+        _account = privateKeyToAccount(pk)
         _walletClient = createWalletClient({
             account: _account,
             chain: megaETH,
             transport: http(),
         })
+        _lastPrivateKey = pk
     }
     return { wallet: _walletClient, account: _account }
+}
+
+/** Force refresh wallet client (call after switching wallets) */
+export function resetWalletClient(): void {
+    _walletClient = null
+    _account = null
+    _lastPrivateKey = null
 }
 
 export function useOnChain() {
