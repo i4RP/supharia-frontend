@@ -384,6 +384,7 @@
 <script setup lang="ts">
 const game_store = useGameStoreC()
 const { getAddress, fetchEthBalance, withdrawEth, fetchRusdBalance, withdrawRusd } = useOnChain()
+const { addPurchasedCredits } = useBatchSettlement()
 
 // Wallet address
 const wallet_address = ref("")
@@ -580,8 +581,9 @@ async function purchaseWithRusd() {
     try {
         const hash = await withdrawRusd(TREASURY_ADDRESS, RUSD_COST)
         purchase_tx.value = hash
-        // Add $100 to game balance
+        // Add $100 to game balance + persist to localStorage
         game_store.balance += PURCHASE_AMOUNT
+        addPurchasedCredits(PURCHASE_AMOUNT)
         purchase_status.value = '+$100 added to GAME SCORE!'
         purchase_status_color.value = '#22c55e'
         // Refresh balances
@@ -611,8 +613,9 @@ async function purchaseWithEth() {
     try {
         const hash = await withdrawEth(TREASURY_ADDRESS, ETH_COST)
         purchase_tx.value = hash
-        // Add $100 to game balance
+        // Add $100 to game balance + persist to localStorage
         game_store.balance += PURCHASE_AMOUNT
+        addPurchasedCredits(PURCHASE_AMOUNT)
         purchase_status.value = '+$100 added to GAME SCORE!'
         purchase_status_color.value = '#22c55e'
         // Refresh balances

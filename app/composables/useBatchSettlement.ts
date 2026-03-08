@@ -4,6 +4,7 @@ import { GAME_C_BALANCE } from "~/constants/game_c"
 
 const BATCH_INTERVAL_MS = 5000 // Flush every 5 seconds
 const LOCAL_STORAGE_KEY = "supharia_pending_results"
+const PURCHASED_CREDITS_KEY = "supharia_purchased_credits"
 
 interface PendingResult {
     won: boolean
@@ -51,6 +52,31 @@ export function useBatchSettlement() {
         if (import.meta.client) {
             localStorage.removeItem(LOCAL_STORAGE_KEY)
         }
+    }
+
+    // ============ Purchased Credits Persistence ============
+
+    /**
+     * Add purchased credits (in dollars) to localStorage.
+     * These persist across browser restarts and are included in balance restoration.
+     */
+    function addPurchasedCredits(amountDollars: number): void {
+        if (!import.meta.client) return
+        try {
+            const current = _loadPurchasedCredits()
+            localStorage.setItem(PURCHASED_CREDITS_KEY, JSON.stringify(current + amountDollars))
+        }
+        catch { /* quota exceeded or private browsing */ }
+    }
+
+    function _loadPurchasedCredits(): number {
+        if (!import.meta.client) return 0
+        try {
+            const raw = localStorage.getItem(PURCHASED_CREDITS_KEY)
+            if (raw) return JSON.parse(raw) as number
+        }
+        catch { /* corrupt data */ }
+        return 0
     }
 
     // ============ Queue Management ============
@@ -144,8 +170,11 @@ export function useBatchSettlement() {
         // Calculate pending PnL (cents)
         const pendingPnl = pending.reduce((sum, r) => sum + r.pnlDelta, 0)
 
-        // Balance = initial + on-chain PnL (cents→dollars) + pending PnL (cents→dollars)
-        const balance = GAME_C_BALANCE.INITIAL + (stats.pnl / 100) + (pendingPnl / 100)
+        // Load purchased credits from localStorage
+        const purchasedCredits = _loadPurchasedCredits()
+
+        // Balance = initial + on-chain PnL (cents→dollars) + pending PnL (cents→dollars) + purchased credits
+        const balance = GAME_C_BALANCE.INITIAL + (stats.pnl / 100) + (pendingPnl / 100) + purchasedCredits
 
         return {
             balance: Math.max(0, balance), // Never go below 0
@@ -191,5 +220,6 @@ export function useBatchSettlement() {
         startBatchTimer,
         stopBatchTimer,
         pendingCount,
+        addPurchasedCredits,
     }
 }
