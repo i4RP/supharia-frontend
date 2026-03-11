@@ -7,11 +7,15 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
 
     const SLOT_MS = GAME_C_GRID.CELL_TIME_SEC * 1000
     const STEP = GAME_C_GRID.CELL_PRICE_STEP
-    const SMOOTH_FACTOR = 0.08  // faster camera tracking for 60fps feel
+    // Frame-rate independent smoothing: target ~6 frames at 120fps to reach 63%
+    const SMOOTH_HALF_LIFE_MS = 50 // ms for camera to reach halfway to target
     const PRICE_LABEL_W = GAME_C_LABELS.PRICE_LABEL_WIDTH
     const TIME_LABEL_H = GAME_C_LABELS.TIME_LABEL_HEIGHT
 
     let view_center = 0
+    let last_frame_time = 0 // for delta-time calculation
+    // Epoch offset: convert performance.now() to Date.now()-compatible timestamps
+    const perf_epoch_offset = Date.now() - performance.now()
 
     const TARGET_ROWS = GAME_C_GRID.TARGET_ROWS
 
@@ -57,7 +61,11 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
         const grid_width = full_width - price_label_w
         const grid_height = full_height - TIME_LABEL_H
 
-        const now = Date.now()
+        // Use performance.now() for sub-ms precision (120fps = 8.33ms per frame)
+        const perf_now = performance.now()
+        const now = perf_epoch_offset + perf_now
+        const dt = last_frame_time > 0 ? Math.min(perf_now - last_frame_time, 50) : 8.33
+        last_frame_time = perf_now
 
         // 方式2: cell_size from TARGET_ROWS, cols derived → perfect squares
         const cell_size = grid_height / TARGET_ROWS
@@ -70,11 +78,16 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
         const cell_width_px = cell_size
         const px_per_ms = cell_width_px / SLOT_MS
 
-        const actual_price = game_store.current_price
+        // Frame-rate independent exponential smoothing for camera
+        // Uses interpolated price so camera tracks the smooth line, not raw API ticks
+        const interp_price = game_store.getInterpolatedPrice(now)
+        const actual_price = interp_price > 0 ? interp_price : game_store.current_price
         if (view_center === 0 && actual_price > 0) {
             view_center = actual_price
         } else if (actual_price > 0) {
-            view_center += (actual_price - view_center) * SMOOTH_FACTOR
+            // Exponential decay: factor = 1 - 0.5^(dt/halfLife)
+            const smooth = 1 - Math.pow(0.5, dt / SMOOTH_HALF_LIFE_MS)
+            view_center += (actual_price - view_center) * smooth
         }
 
         const visible_rows = TARGET_ROWS

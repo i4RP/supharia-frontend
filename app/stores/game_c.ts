@@ -8,10 +8,12 @@ export const useGameStoreC = defineStore("game_c", () => {
     // Non-reactive buffer for high-frequency price data (read only in rAF)
     let price_buffer: PricePoint[] = []
 
-    // 60fps interpolation state (non-reactive, read in rAF)
-    let interp_prev: PricePoint | null = null  // previous API tick
-    let interp_curr: PricePoint | null = null  // latest API tick
-    let interp_velocity = 0                     // price units per ms
+    // 120fps interpolation state (non-reactive, read in rAF)
+    // Keep last 3 ticks for cubic Hermite tangent estimation
+    let interp_p0: PricePoint | null = null  // two ticks ago
+    let interp_p1: PricePoint | null = null  // previous tick
+    let interp_p2: PricePoint | null = null  // latest tick
+    let interp_velocity = 0                   // price units per ms (smoothed)
 
     const current_price = ref(GAME_C_PRICE.BASE)
     const orders = shallowRef<GameOrder[]>([])
@@ -85,13 +87,17 @@ export const useGameStoreC = defineStore("game_c", () => {
         if (price_buffer.length > GAME_C_PRICE.MAX_HISTORY) {
             price_buffer = price_buffer.slice(-GAME_C_PRICE.MAX_HISTORY)
         }
-        // Update interpolation anchors
-        interp_prev = interp_curr
-        interp_curr = { price: point.price, timestamp: point.timestamp }
-        if (interp_prev && interp_curr) {
-            const dt = interp_curr.timestamp - interp_prev.timestamp
+        // Update interpolation anchors (shift window of 3)
+        interp_p0 = interp_p1
+        interp_p1 = interp_p2
+        interp_p2 = { price: point.price, timestamp: point.timestamp }
+        // Compute smoothed velocity from available ticks
+        if (interp_p1 && interp_p2) {
+            const dt = interp_p2.timestamp - interp_p1.timestamp
             if (dt > 0) {
-                interp_velocity = (interp_curr.price - interp_prev.price) / dt
+                const v_new = (interp_p2.price - interp_p1.price) / dt
+                // Blend with previous velocity for stability
+                interp_velocity = interp_p0 ? interp_velocity * 0.3 + v_new * 0.7 : v_new
             }
         }
     }
@@ -102,31 +108,41 @@ export const useGameStoreC = defineStore("game_c", () => {
 
     /**
      * Get smoothly interpolated price for the current frame.
-     * Lerps between last two API ticks, then gently extrapolates.
-     * Called from rAF at 60fps.
+     * Uses cubic Hermite between ticks + exponential-decay extrapolation.
+     * Called from rAF at 120fps for sub-8.33ms precision.
      */
     function getInterpolatedPrice(now: number): number {
-        if (!interp_curr) return current_price.value
-        if (!interp_prev) return interp_curr.price
+        if (!interp_p2) return current_price.value
+        if (!interp_p1) return interp_p2.price
 
-        const elapsed = now - interp_curr.timestamp
-        const tick_interval = interp_curr.timestamp - interp_prev.timestamp
-        if (tick_interval <= 0) return interp_curr.price
+        const elapsed = now - interp_p2.timestamp
+        const tick_dt = interp_p2.timestamp - interp_p1.timestamp
+        if (tick_dt <= 0) return interp_p2.price
 
         if (elapsed <= 0) {
-            // Between prev and curr - lerp
-            const t = Math.max(0, Math.min(1, (now - interp_prev.timestamp) / tick_interval))
-            // Smooth step easing for natural feel
-            const st = t * t * (3 - 2 * t)
-            return interp_prev.price + (interp_curr.price - interp_prev.price) * st
+            // Between p1 and p2 — cubic Hermite spline
+            const t = Math.max(0, Math.min(1, (now - interp_p1.timestamp) / tick_dt))
+            // Hermite basis: h00, h10, h01, h11
+            const t2 = t * t
+            const t3 = t2 * t
+            const h00 = 2 * t3 - 3 * t2 + 1
+            const h10 = t3 - 2 * t2 + t
+            const h01 = -2 * t3 + 3 * t2
+            const h11 = t3 - t2
+            // Tangents at p1 and p2
+            const m1 = interp_p0
+                ? ((interp_p2.price - interp_p0.price) / (interp_p2.timestamp - interp_p0.timestamp)) * tick_dt
+                : (interp_p2.price - interp_p1.price)
+            const m2 = interp_velocity * tick_dt
+            return h00 * interp_p1.price + h10 * m1 + h01 * interp_p2.price + h11 * m2
         }
 
-        // Past the latest tick - gentle extrapolation with decay
-        // Extrapolate up to 1.5s max, velocity decays exponentially
-        const max_extrap = 1500
+        // Past the latest tick — gentle extrapolation with exponential decay
+        // Shorter max to avoid overshoot with 500ms ticks
+        const max_extrap = 800
         const clamped = Math.min(elapsed, max_extrap)
-        const decay = Math.exp(-clamped / 800) // exponential decay
-        return interp_curr.price + interp_velocity * clamped * decay
+        const decay = Math.exp(-clamped / 400)
+        return interp_p2.price + interp_velocity * clamped * decay
     }
 
     /**
@@ -207,8 +223,9 @@ export const useGameStoreC = defineStore("game_c", () => {
         game_start_time.value = 0
         order_counter = 0
         // Reset interpolation state
-        interp_prev = null
-        interp_curr = null
+        interp_p0 = null
+        interp_p1 = null
+        interp_p2 = null
         interp_velocity = 0
     }
 
