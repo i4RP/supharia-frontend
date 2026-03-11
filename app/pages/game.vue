@@ -7,7 +7,17 @@
             class="fixed bottom-0 left-0 right-0 z-50 flex items-stretch"
             style="background: rgba(3,8,15,0.95); border-top: 1px solid rgba(27,141,255,0.2); padding-bottom: env(safe-area-inset-bottom, 8px)"
         >
-            <!-- Chart (Game) -->
+            <!-- Dungeon List -->
+            <NuxtLink
+                to="/game"
+                class="nav-btn flex-1 flex items-center justify-center py-4"
+                :class="{ 'nav-active': isDungeonRoute, 'nav-tapped': tapped === 'dungeon' }"
+                @pointerdown="flashTap('dungeon')"
+            >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" :stroke="isDungeonRoute || tapped === 'dungeon' ? '#1B8DFF' : 'rgba(255,255,255,0.4)'" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
+            </NuxtLink>
+
+            <!-- Battle (Game) -->
             <NuxtLink
                 to="/game/mode-c"
                 class="nav-btn flex-1 flex items-center justify-center py-4"
@@ -47,9 +57,11 @@ definePageMeta({
 
 const route = useRoute()
 
+const isDungeonRoute = computed(() => route.path === "/game")
+
 const isGameRoute = computed(() => {
     const p = route.path
-    return p === "/game/mode-c" || p === "/game/mode-a" || p === "/game"
+    return p === "/game/mode-c" || p === "/game/mode-a"
 })
 
 const isRankingRoute = computed(() => route.path === "/game/ranking")

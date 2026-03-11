@@ -256,59 +256,83 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
             ctx.globalAlpha = 1.0
         }
 
-        // 6. Price line - trail in pink, head in white
+        // 6. Price line - trail + head with smooth Catmull-Rom spline
         const history = game_store.getPriceHistory()
         let last_x = chart_head_x
         let last_y = grid_height / 2
-        if (history.length > 1) {
-            // Pink trail
+
+        // Convert history to screen-space points, filter visible
+        const pts: { x: number; y: number; ts: number }[] = []
+        for (let i = 0; i < history.length; i++) {
+            const point = history[i]
+            const x = timeToX(point.timestamp)
+            if (x < -100) continue
+            if (x > grid_width + 100) break
+            pts.push({ x, y: priceToY(point.price), ts: point.timestamp })
+        }
+
+        if (pts.length > 1) {
+            // Helper: draw smooth Catmull-Rom spline through points
+            function drawSmoothLine(points: { x: number; y: number }[]) {
+                if (points.length < 2) return
+                if (points.length === 2) {
+                    ctx.moveTo(points[0].x, points[0].y)
+                    ctx.lineTo(points[1].x, points[1].y)
+                    return
+                }
+                ctx.moveTo(points[0].x, points[0].y)
+                for (let i = 0; i < points.length - 1; i++) {
+                    const p0 = points[Math.max(0, i - 1)]
+                    const p1 = points[i]
+                    const p2 = points[i + 1]
+                    const p3 = points[Math.min(points.length - 1, i + 2)]
+                    const cp1x = p1.x + (p2.x - p0.x) / 6
+                    const cp1y = p1.y + (p2.y - p0.y) / 6
+                    const cp2x = p2.x - (p3.x - p1.x) / 6
+                    const cp2y = p2.y - (p3.y - p1.y) / 6
+                    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y)
+                }
+            }
+
+            // Blue trail (full line)
             ctx.strokeStyle = GAME_C_COLORS.PRICE_LINE_TRAIL
             ctx.lineWidth = 2
             ctx.globalAlpha = 0.6
+            ctx.lineJoin = "round"
+            ctx.lineCap = "round"
             ctx.beginPath()
-            let started = false
-            for (let i = 0; i < history.length; i++) {
-                const point = history[i]
-                const x = timeToX(point.timestamp)
-                if (x < -50) continue
-                if (x > grid_width + 50) break
-                const y = priceToY(point.price)
-                if (!started) {
-                    ctx.moveTo(x, y)
-                    started = true
-                } else {
-                    ctx.lineTo(x, y)
-                }
-                last_x = x
-                last_y = y
-            }
+            drawSmoothLine(pts)
             ctx.stroke()
 
-            // White leading portion (last ~3 seconds)
-            ctx.strokeStyle = GAME_C_COLORS.PRICE_LINE
-            ctx.lineWidth = 2.5
-            ctx.globalAlpha = 1.0
-            ctx.beginPath()
-            started = false
+            // White leading portion (last ~3 seconds) - Ender Dragon glow
             const white_start = now - 3000
-            for (let i = 0; i < history.length; i++) {
-                const point = history[i]
-                if (point.timestamp < white_start) continue
-                const x = timeToX(point.timestamp)
-                if (x > grid_width + 50) break
-                const y = priceToY(point.price)
-                if (!started) {
-                    ctx.moveTo(x, y)
-                    started = true
-                } else {
-                    ctx.lineTo(x, y)
-                }
-                last_x = x
-                last_y = y
-            }
-            ctx.stroke()
+            const white_pts = pts.filter(p => p.ts >= white_start)
+            if (white_pts.length > 1) {
+                ctx.strokeStyle = GAME_C_COLORS.PRICE_LINE
+                ctx.lineWidth = 2.5
+                ctx.globalAlpha = 1.0
+                ctx.beginPath()
+                drawSmoothLine(white_pts)
+                ctx.stroke()
 
-            // White dot at chart head
+                // Glow effect on leading line
+                ctx.strokeStyle = GAME_C_COLORS.PRICE_LINE_TRAIL
+                ctx.lineWidth = 6
+                ctx.globalAlpha = 0.15
+                ctx.beginPath()
+                drawSmoothLine(white_pts)
+                ctx.stroke()
+            }
+
+            last_x = pts[pts.length - 1].x
+            last_y = pts[pts.length - 1].y
+
+            // Glowing dot at chart head (dragon's eye)
+            ctx.globalAlpha = 0.3
+            ctx.fillStyle = GAME_C_COLORS.PRICE_LINE_TRAIL
+            ctx.beginPath()
+            ctx.arc(last_x, last_y, 8, 0, Math.PI * 2)
+            ctx.fill()
             ctx.fillStyle = GAME_C_COLORS.PRICE_LINE
             ctx.globalAlpha = 1.0
             ctx.beginPath()

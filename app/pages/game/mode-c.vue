@@ -1,38 +1,48 @@
 <template>
     <div class="absolute inset-0 top-0 flex flex-col" style="background: #03080F">
-        <!-- Top Bar -->
-        <div class="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 pt-[env(safe-area-inset-top,8px)] pb-1">
-            <!-- ETH Price Pill -->
-            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full" style="background: rgba(5,13,26,0.9); border: 1px solid rgba(27,141,255,0.3)">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <circle cx="9" cy="9" r="9" fill="#627EEA" />
-                    <path d="M9 2.5L9 7.5L13 9L9 2.5Z" fill="#C0CBF6" />
-                    <path d="M9 2.5L5 9L9 7.5V2.5Z" fill="white" />
-                    <path d="M9 12.5L13 9.5L9 11V12.5Z" fill="#C0CBF6" />
-                    <path d="M9 12.5V11L5 9.5L9 12.5Z" fill="white" />
-                    <path d="M9 15.5L13 10L9 12V15.5Z" fill="#8A99CC" />
-                    <path d="M9 15.5V12L5 10L9 15.5Z" fill="#B8C8EF" />
-                </svg>
-                <span class="text-white font-bold text-sm font-mono">${{ game_store.current_price.toFixed(2) }}</span>
-            </div>
-
-            <!-- Right: Status + Icons -->
+        <!-- Top Bar: Ender Dragon HP + Status -->
+        <div class="absolute top-0 left-0 right-0 z-10 px-3 pt-[env(safe-area-inset-top,8px)] pb-1">
             <div class="flex items-center gap-2">
-                <span
-                    :class="game_store.is_connected ? 'text-green-400' : 'text-red-400'"
-                    class="text-xs font-mono"
-                >
-                    {{ game_store.is_connected ? "LIVE" : "OFFLINE" }}
-                </span>
-                <div class="flex items-center gap-1 px-2 py-1.5 rounded-full" style="background: rgba(5,13,26,0.9); border: 1px solid rgba(27,141,255,0.3)">
+                <!-- Dragon Icon + Name -->
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <svg width="20" height="20" viewBox="0 0 36 36" fill="none">
+                        <path d="M18 6L8 14L11 26H25L28 14L18 6Z" stroke="#ef4444" stroke-width="1.5" fill="rgba(239,68,68,0.15)" />
+                        <circle cx="14" cy="15" r="1.5" fill="#ef4444" />
+                        <circle cx="22" cy="15" r="1.5" fill="#ef4444" />
+                    </svg>
+                    <span class="text-white font-bold text-xs">Ender Dragon</span>
+                </div>
+
+                <!-- HP Bar -->
+                <div class="flex-1 h-5 rounded-full overflow-hidden relative" style="background: rgba(5,13,26,0.9); border: 1px solid rgba(239,68,68,0.3)">
+                    <div
+                        class="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
+                        :style="{
+                            width: dragon_hp_pct + '%',
+                            background: dragon_hp_pct > 50 ? 'linear-gradient(90deg, #ef4444, #f97316)' : dragon_hp_pct > 20 ? 'linear-gradient(90deg, #f97316, #eab308)' : 'linear-gradient(90deg, #eab308, #22c55e)',
+                        }"
+                    />
+                    <span class="absolute inset-0 flex items-center justify-center text-white text-[10px] font-bold font-mono z-10">
+                        HP {{ dragon_hp_pct.toFixed(0) }}%
+                    </span>
+                </div>
+
+                <!-- Status + Reset -->
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <span
+                        :class="game_store.is_connected ? 'text-green-400' : 'text-red-400'"
+                        class="text-[10px] font-mono"
+                    >
+                        {{ game_store.is_connected ? "LIVE" : "OFF" }}
+                    </span>
                     <button class="p-1 text-white/60 hover:text-white transition-colors" @click="resetAndRestart">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Game Canvas -->
+        <!-- Game Canvas (Battle Field) -->
         <canvas
             ref="game_canvas"
             class="w-full flex-1 cursor-crosshair"
@@ -40,17 +50,25 @@
             @click="handleClick"
         />
 
-        <!-- Bottom Controls -->
+        <!-- Ender Strike flash overlay -->
+        <div
+            v-if="show_strike"
+            class="absolute inset-0 z-20 pointer-events-none"
+            :style="{ background: strike_color, transition: 'opacity 0.3s' }"
+        />
+
+        <!-- Bottom Controls: Monster Box -->
         <div class="absolute bottom-[52px] left-0 right-0 z-10 flex items-center justify-between px-3 pb-1">
-            <!-- Balance Pill -->
-            <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background: rgba(5,13,26,0.9); border: 1px solid rgba(27,141,255,0.3)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B8DFF" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 10H18a2 2 0 0 0 0 4h4" /></svg>
-                <span class="text-white font-bold text-sm font-mono">${{ game_store.balance.toFixed(2) }}</span>
+            <!-- Game Score -->
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full" style="background: rgba(5,13,26,0.9); border: 1px solid rgba(27,141,255,0.3)">
+                <span class="text-[10px] font-mono" style="color: #7A8AA0">SCORE</span>
+                <span class="text-white font-bold text-sm font-mono">${{ game_store.balance.toFixed(0) }}</span>
             </div>
 
-            <!-- Bet Cost Pill -->
-            <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background: rgba(5,13,26,0.9); border: 1px solid rgba(27,141,255,0.3)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B8DFF" stroke-width="2"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 10h8M8 14h8" /></svg>
+            <!-- Monster Box -->
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg" style="background: rgba(5,13,26,0.9); border: 1px solid rgba(0,212,255,0.3)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 12h18" /><circle cx="12" cy="7.5" r="1.5" fill="#00D4FF" /></svg>
+                <span class="text-[10px] font-mono" style="color: #00D4FF">MONSTER BOX</span>
                 <span class="text-white font-bold text-sm font-mono">${{ bet_cost }}</span>
             </div>
         </div>
@@ -68,10 +86,44 @@ const { connect, disconnect } = useGameStreamC()
 const { start, stop, handleClick, handleResize } = useGameCanvasC(game_canvas)
 const bet_cost = GAME_C_BALANCE.BET_COST
 
+// Ender Dragon HP: starts at 100%, decreases with each win
+const DRAGON_MAX_HP = 20 // wins needed to defeat
+const dragon_hp_pct = computed(() => {
+    const hits = game_store.session_stats.wins
+    const hp = Math.max(0, DRAGON_MAX_HP - hits)
+    return (hp / DRAGON_MAX_HP) * 100
+})
+
+// Flash overlay on strike
+const show_strike = ref(false)
+const strike_color = ref("rgba(34,197,94,0.15)")
+let last_wins = 0
+let last_losses = 0
+
+watch(() => game_store.session_stats.wins, (val) => {
+    if (val > last_wins) {
+        strike_color.value = "rgba(34,197,94,0.15)"
+        show_strike.value = true
+        setTimeout(() => { show_strike.value = false }, 300)
+    }
+    last_wins = val
+})
+
+watch(() => game_store.session_stats.losses, (val) => {
+    if (val > last_losses) {
+        strike_color.value = "rgba(239,68,68,0.08)"
+        show_strike.value = true
+        setTimeout(() => { show_strike.value = false }, 200)
+    }
+    last_losses = val
+})
+
 function resetAndRestart() {
     stop()
     disconnect()
     game_store.resetGame()
+    last_wins = 0
+    last_losses = 0
     connect()
     nextTick(() => {
         start()
@@ -79,10 +131,10 @@ function resetAndRestart() {
 }
 
 onMounted(() => {
-    // Restore balance from on-chain + pending results
     game_store.loadBalance()
-    // Start batch settlement timer (flushes results every 5s)
     game_store.startSettlement()
+    last_wins = game_store.session_stats.wins
+    last_losses = game_store.session_stats.losses
     connect()
     nextTick(() => {
         start()
@@ -93,7 +145,6 @@ onMounted(() => {
 onUnmounted(() => {
     stop()
     disconnect()
-    // Stop batch settlement and flush remaining results
     game_store.stopSettlement()
     window.removeEventListener("resize", handleResize)
 })
