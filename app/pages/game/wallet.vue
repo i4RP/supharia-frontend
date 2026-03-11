@@ -379,43 +379,49 @@
                     </div>
                 </div>
 
-                <!-- Active Monster Card -->
-                <div
-                    v-if="wallet_active_monster"
-                    class="rounded-xl p-4 mb-3 cursor-pointer"
-                    style="background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.2)"
-                    @click="show_wallet_monster_box = true"
-                >
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl" style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3)">
-                            {{ wallet_active_template?.icon_emoji }}
-                        </div>
-                        <div class="flex-1">
-                            <div class="text-white font-bold font-mono text-sm">{{ wallet_active_template?.name }}</div>
-                            <div class="flex items-center gap-2 mt-0.5">
-                                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded" style="background: rgba(0,212,255,0.15); color: #00D4FF">Lv.{{ wallet_active_monster.level }}</span>
-                                <span class="text-[10px] font-mono" style="color: rgba(255,255,255,0.35)">${{ monster_store.selected_tier }} tier</span>
+                <!-- Monster NFT Cards (All 3) -->
+                <div class="space-y-3 mb-3">
+                    <div
+                        v-for="nft in wallet_monster_nfts"
+                        :key="nft.instance.template_id"
+                        class="rounded-xl p-4 cursor-pointer transition-all"
+                        :style="monster_store.equipped[nft.template!.element] === nft.instance.template_id
+                            ? 'background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.35); box-shadow: 0 0 12px rgba(0,212,255,0.1)'
+                            : 'background: rgba(0,212,255,0.03); border: 1px solid rgba(0,212,255,0.12)'"
+                        @click="monster_store.selectTier(nft.template!.element); show_wallet_monster_box = true"
+                    >
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl" style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3)">
+                                {{ nft.template?.icon_emoji }}
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-white font-bold font-mono text-sm">{{ nft.template?.name }}</div>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span class="text-[10px] font-mono px-1.5 py-0.5 rounded" style="background: rgba(0,212,255,0.15); color: #00D4FF">Lv.{{ nft.instance.level }}</span>
+                                    <span class="text-[10px] font-mono" style="color: rgba(255,255,255,0.35)">${{ nft.template?.element }} tier</span>
+                                    <span v-if="monster_store.equipped[nft.template!.element] === nft.instance.template_id" class="text-[8px] font-mono px-1 py-0.5 rounded" style="background: rgba(34,197,94,0.2); color: #22c55e; border: 1px solid rgba(34,197,94,0.3)">EQUIPPED</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[10px] font-mono" style="color: rgba(255,255,255,0.35)">NFT</div>
+                                <div class="text-xs font-bold font-mono" style="color: #00D4FF">#{{ nft.instance.template_id === 'radon' ? '001' : nft.instance.template_id === 'wave' ? '002' : '003' }}</div>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <div class="text-[10px] font-mono" style="color: rgba(255,255,255,0.35)">BOX MULT</div>
-                            <div class="text-sm font-bold font-mono" style="color: #00D4FF">x{{ monster_store.box_multiplier.toFixed(2) }}</div>
-                        </div>
-                    </div>
 
-                    <!-- Mini Stats -->
-                    <div class="grid grid-cols-3 gap-2 mt-3">
-                        <div class="rounded-lg p-1.5 text-center" style="background: rgba(0,0,0,0.3)">
-                            <div class="text-[7px] font-mono" style="color: rgba(255,255,255,0.3)">PWR</div>
-                            <div class="text-[10px] font-bold font-mono" style="color: #ef4444">{{ wallet_active_monster.stats.power }}</div>
-                        </div>
-                        <div class="rounded-lg p-1.5 text-center" style="background: rgba(0,0,0,0.3)">
-                            <div class="text-[7px] font-mono" style="color: rgba(255,255,255,0.3)">RCV</div>
-                            <div class="text-[10px] font-bold font-mono" style="color: #22c55e">{{ wallet_active_monster.stats.recovery }}</div>
-                        </div>
-                        <div class="rounded-lg p-1.5 text-center" style="background: rgba(0,0,0,0.3)">
-                            <div class="text-[7px] font-mono" style="color: rgba(255,255,255,0.3)">LCK</div>
-                            <div class="text-[10px] font-bold font-mono" style="color: #eab308">{{ wallet_active_monster.stats.luck }}</div>
+                        <!-- Mini Stats -->
+                        <div class="grid grid-cols-3 gap-2 mt-3">
+                            <div class="rounded-lg p-1.5 text-center" style="background: rgba(0,0,0,0.3)">
+                                <div class="text-[7px] font-mono" style="color: rgba(255,255,255,0.3)">PWR</div>
+                                <div class="text-[10px] font-bold font-mono" style="color: #ef4444">{{ nft.instance.stats.power }}</div>
+                            </div>
+                            <div class="rounded-lg p-1.5 text-center" style="background: rgba(0,0,0,0.3)">
+                                <div class="text-[7px] font-mono" style="color: rgba(255,255,255,0.3)">RCV</div>
+                                <div class="text-[10px] font-bold font-mono" style="color: #22c55e">{{ nft.instance.stats.recovery }}</div>
+                            </div>
+                            <div class="rounded-lg p-1.5 text-center" style="background: rgba(0,0,0,0.3)">
+                                <div class="text-[7px] font-mono" style="color: rgba(255,255,255,0.3)">LCK</div>
+                                <div class="text-[10px] font-bold font-mono" style="color: #eab308">{{ nft.instance.stats.luck }}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -847,6 +853,14 @@ const mb_tier_template = computed(() => {
 // Wallet page active monster display
 const wallet_active_monster = computed(() => monster_store.active_monster)
 const wallet_active_template = computed(() => monster_store.active_template)
+
+// All 3 monster NFT cards for wallet display
+const wallet_monster_nfts = computed(() => {
+    return monster_store.monsters.map(m => {
+        const tmpl = getMonsterTemplate(m.template_id)
+        return { instance: m, template: tmpl }
+    }).filter(x => x.template)
+})
 
 function handleGacha() {
     const egg_id = monster_store.pullGacha()
