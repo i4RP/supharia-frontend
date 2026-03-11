@@ -8,6 +8,11 @@ export const useGameStoreC = defineStore("game_c", () => {
     // Non-reactive buffer for high-frequency price data (read only in rAF)
     let price_buffer: PricePoint[] = []
 
+    // 60fps interpolation state (non-reactive, read in rAF)
+    let interp_prev: PricePoint | null = null  // previous API tick
+    let interp_curr: PricePoint | null = null  // latest API tick
+    let interp_velocity = 0                     // price units per ms
+
     const current_price = ref(GAME_C_PRICE.BASE)
     const orders = shallowRef<GameOrder[]>([])
     const balance = ref(GAME_C_BALANCE.INITIAL)
@@ -80,10 +85,61 @@ export const useGameStoreC = defineStore("game_c", () => {
         if (price_buffer.length > GAME_C_PRICE.MAX_HISTORY) {
             price_buffer = price_buffer.slice(-GAME_C_PRICE.MAX_HISTORY)
         }
+        // Update interpolation anchors
+        interp_prev = interp_curr
+        interp_curr = { price: point.price, timestamp: point.timestamp }
+        if (interp_prev && interp_curr) {
+            const dt = interp_curr.timestamp - interp_prev.timestamp
+            if (dt > 0) {
+                interp_velocity = (interp_curr.price - interp_prev.price) / dt
+            }
+        }
     }
 
     function getPriceHistory(): PricePoint[] {
         return price_buffer
+    }
+
+    /**
+     * Get smoothly interpolated price for the current frame.
+     * Lerps between last two API ticks, then gently extrapolates.
+     * Called from rAF at 60fps.
+     */
+    function getInterpolatedPrice(now: number): number {
+        if (!interp_curr) return current_price.value
+        if (!interp_prev) return interp_curr.price
+
+        const elapsed = now - interp_curr.timestamp
+        const tick_interval = interp_curr.timestamp - interp_prev.timestamp
+        if (tick_interval <= 0) return interp_curr.price
+
+        if (elapsed <= 0) {
+            // Between prev and curr - lerp
+            const t = Math.max(0, Math.min(1, (now - interp_prev.timestamp) / tick_interval))
+            // Smooth step easing for natural feel
+            const st = t * t * (3 - 2 * t)
+            return interp_prev.price + (interp_curr.price - interp_prev.price) * st
+        }
+
+        // Past the latest tick - gentle extrapolation with decay
+        // Extrapolate up to 1.5s max, velocity decays exponentially
+        const max_extrap = 1500
+        const clamped = Math.min(elapsed, max_extrap)
+        const decay = Math.exp(-clamped / 800) // exponential decay
+        return interp_curr.price + interp_velocity * clamped * decay
+    }
+
+    /**
+     * Get price history with a synthetic interpolated point appended.
+     * This makes the chart head animate smoothly between API ticks.
+     */
+    function getInterpolatedHistory(now: number): PricePoint[] {
+        const base = price_buffer
+        if (base.length === 0) return base
+
+        const interp_price = getInterpolatedPrice(now)
+        // Append synthetic point at current time for smooth head movement
+        return [...base, { price: interp_price, timestamp: now }]
     }
 
     function placeOrder(order: Omit<GameOrder, "id">) {
@@ -150,6 +206,10 @@ export const useGameStoreC = defineStore("game_c", () => {
         is_running.value = false
         game_start_time.value = 0
         order_counter = 0
+        // Reset interpolation state
+        interp_prev = null
+        interp_curr = null
+        interp_velocity = 0
     }
 
     /**
@@ -186,6 +246,8 @@ export const useGameStoreC = defineStore("game_c", () => {
         // Methods
         addPricePoint,
         getPriceHistory,
+        getInterpolatedPrice,
+        getInterpolatedHistory,
         placeOrder,
         checkOrderHits,
         resetGame,

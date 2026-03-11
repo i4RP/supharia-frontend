@@ -7,7 +7,7 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
 
     const SLOT_MS = GAME_C_GRID.CELL_TIME_SEC * 1000
     const STEP = GAME_C_GRID.CELL_PRICE_STEP
-    const SMOOTH_FACTOR = 0.03
+    const SMOOTH_FACTOR = 0.08  // faster camera tracking for 60fps feel
     const PRICE_LABEL_W = GAME_C_LABELS.PRICE_LABEL_WIDTH
     const TIME_LABEL_H = GAME_C_LABELS.TIME_LABEL_HEIGHT
 
@@ -256,8 +256,8 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
             ctx.globalAlpha = 1.0
         }
 
-        // 6. Price line - trail + head with smooth Catmull-Rom spline
-        const history = game_store.getPriceHistory()
+        // 6. Price line - trail + head with smooth Catmull-Rom spline + 60fps interpolation
+        const history = game_store.getInterpolatedHistory(now)
         let last_x = chart_head_x
         let last_y = grid_height / 2
 
@@ -367,10 +367,11 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
             ctx.fillText(`$${p.toFixed(1)}`, label_x, y)
         }
 
-        // Current price badge on right
-        if (actual_price > 0) {
-            const badge_y = priceToY(actual_price)
-            const badge_text = `$${actual_price.toFixed(1)}`
+        // Current price badge on right (use interpolated price for smooth badge)
+        const display_price = game_store.getInterpolatedPrice(now)
+        if (display_price > 0) {
+            const badge_y = priceToY(display_price)
+            const badge_text = `$${display_price.toFixed(1)}`
             ctx.font = `bold ${is_mobile ? 9 : 11}px monospace`
             const badge_w = ctx.measureText(badge_text).width + 10
             const badge_h = is_mobile ? 16 : 20
