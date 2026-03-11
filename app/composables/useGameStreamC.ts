@@ -1,7 +1,7 @@
 import type { PricePoint } from "~/types/game"
 
 const REDSTONE_URL = "https://api.redstone.finance/prices/?symbols=ETH&provider=redstone-primary-prod"
-const POLL_INTERVAL_MS = 500 // 2Hz polling for smoother 120fps interpolation
+const POLL_INTERVAL_MS = 1000 // 1Hz polling; 120fps smoothness via cubic Hermite interpolation
 
 /**
  * Mode C price stream: polls RedStone ETH/USD price API.
