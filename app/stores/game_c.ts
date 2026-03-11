@@ -159,8 +159,8 @@ export const useGameStoreC = defineStore("game_c", () => {
     }
 
     function placeOrder(order: Omit<GameOrder, "id">) {
-        if (balance.value < GAME_C_BALANCE.BET_COST) return
-        balance.value -= GAME_C_BALANCE.BET_COST
+        if (balance.value < order.cost) return
+        balance.value -= order.cost
         order_counter++
         orders.value = [...orders.value, { ...order, id: String(order_counter) }]
     }

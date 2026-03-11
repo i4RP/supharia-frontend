@@ -369,6 +369,67 @@
                 </div>
             </div>
 
+            <!-- Monster Box Section -->
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="text-[11px] font-mono tracking-wider" style="color: rgba(255,255,255,0.4)">MONSTER BOX</div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-mono" style="color: #a855f7">&#x1F48E; {{ monster_store.magic_stones }}</span>
+                        <span class="text-[10px] font-mono" style="color: #eab308">&#x1F95A; {{ monster_store.unrevealed_eggs.length }}</span>
+                    </div>
+                </div>
+
+                <!-- Active Monster Card -->
+                <div
+                    v-if="wallet_active_monster"
+                    class="rounded-xl p-4 mb-3 cursor-pointer"
+                    style="background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.2)"
+                    @click="show_wallet_monster_box = true"
+                >
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl" style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3)">
+                            {{ wallet_active_template?.icon_emoji }}
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-white font-bold font-mono text-sm">{{ wallet_active_template?.name }}</div>
+                            <div class="flex items-center gap-2 mt-0.5">
+                                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded" style="background: rgba(0,212,255,0.15); color: #00D4FF">Lv.{{ wallet_active_monster.level }}</span>
+                                <span class="text-[10px] font-mono" style="color: rgba(255,255,255,0.35)">${{ monster_store.selected_tier }} tier</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[10px] font-mono" style="color: rgba(255,255,255,0.35)">BOX MULT</div>
+                            <div class="text-sm font-bold font-mono" style="color: #00D4FF">x{{ monster_store.box_multiplier.toFixed(2) }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Mini Stats -->
+                    <div class="grid grid-cols-3 gap-2 mt-3">
+                        <div class="rounded-lg p-1.5 text-center" style="background: rgba(0,0,0,0.3)">
+                            <div class="text-[7px] font-mono" style="color: rgba(255,255,255,0.3)">PWR</div>
+                            <div class="text-[10px] font-bold font-mono" style="color: #ef4444">{{ wallet_active_monster.stats.power }}</div>
+                        </div>
+                        <div class="rounded-lg p-1.5 text-center" style="background: rgba(0,0,0,0.3)">
+                            <div class="text-[7px] font-mono" style="color: rgba(255,255,255,0.3)">RCV</div>
+                            <div class="text-[10px] font-bold font-mono" style="color: #22c55e">{{ wallet_active_monster.stats.recovery }}</div>
+                        </div>
+                        <div class="rounded-lg p-1.5 text-center" style="background: rgba(0,0,0,0.3)">
+                            <div class="text-[7px] font-mono" style="color: rgba(255,255,255,0.3)">LCK</div>
+                            <div class="text-[10px] font-bold font-mono" style="color: #eab308">{{ wallet_active_monster.stats.luck }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Open Monster Box Button -->
+                <button
+                    class="w-full py-3 rounded-xl font-bold font-mono text-sm tracking-wider"
+                    style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.25); color: #00D4FF"
+                    @click="show_wallet_monster_box = true"
+                >
+                    OPEN MONSTER BOX
+                </button>
+            </div>
+
             <!-- Recent Activity (Placeholder) -->
             <div>
                 <div class="text-[11px] font-mono tracking-wider mb-3" style="color: rgba(255,255,255,0.4)">RECENT ACTIVITY</div>
@@ -562,13 +623,173 @@
                 </div>
             </Transition>
         </Teleport>
+
+        <!-- Monster Box Modal (Wallet) -->
+        <Teleport to="body">
+            <div
+                v-if="show_wallet_monster_box"
+                class="fixed inset-0 z-[100] flex items-end justify-center"
+                @click.self="show_wallet_monster_box = false"
+            >
+                <div class="absolute inset-0 bg-black/60" @click="show_wallet_monster_box = false" />
+                <div
+                    class="relative w-full max-w-[420px] rounded-t-2xl overflow-y-auto"
+                    style="background: #0A1628; border: 1px solid rgba(0,212,255,0.2); border-bottom: none; max-height: 80vh"
+                >
+                    <!-- Header -->
+                    <div class="flex items-center justify-between px-4 py-3 sticky top-0 z-10" style="background: #0A1628; border-bottom: 1px solid rgba(0,212,255,0.15)">
+                        <div class="flex items-center gap-2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 12h18" /><circle cx="12" cy="7.5" r="1.5" fill="#00D4FF" /></svg>
+                            <span class="text-sm font-bold font-mono" style="color: #00D4FF">MONSTER BOX</span>
+                        </div>
+                        <button class="p-1" @click="show_wallet_monster_box = false">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                        </button>
+                    </div>
+
+                    <!-- Tier Tabs -->
+                    <div class="flex px-4 pt-3 gap-2">
+                        <button
+                            v-for="tier in mb_tiers"
+                            :key="tier"
+                            class="flex-1 py-2 rounded-lg text-center font-mono font-bold text-sm transition-all"
+                            :style="monster_store.selected_tier === tier
+                                ? 'background: rgba(0,212,255,0.2); border: 1px solid rgba(0,212,255,0.5); color: #00D4FF'
+                                : 'background: rgba(5,13,26,0.8); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.4)'"
+                            @click="monster_store.selectTier(tier)"
+                        >
+                            ${{ tier }}
+                        </button>
+                    </div>
+
+                    <!-- Monster Card -->
+                    <div class="px-4 py-3">
+                        <div
+                            v-if="mb_tier_monster"
+                            class="rounded-xl p-4"
+                            style="background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.2)"
+                        >
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-14 h-14 rounded-xl flex items-center justify-center text-3xl" style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3)">
+                                    {{ mb_tier_template?.icon_emoji }}
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-white font-bold font-mono">{{ mb_tier_template?.name }}</div>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded" style="background: rgba(0,212,255,0.15); color: #00D4FF">Lv.{{ mb_tier_monster.level }}</span>
+                                        <span class="text-[10px] font-mono" style="color: rgba(255,255,255,0.35)">${{ monster_store.selected_tier }} tier</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-[10px] font-mono" style="color: rgba(255,255,255,0.35)">BOX MULT</div>
+                                    <div class="text-lg font-bold font-mono" style="color: #00D4FF">x{{ monster_store.box_multiplier.toFixed(2) }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Stats -->
+                            <div class="grid grid-cols-3 gap-2 mb-3">
+                                <div class="rounded-lg p-2.5 text-center" style="background: rgba(0,0,0,0.3)">
+                                    <div class="text-[8px] font-mono tracking-wider" style="color: rgba(255,255,255,0.35)">POWER</div>
+                                    <div class="text-sm font-bold font-mono" style="color: #ef4444">{{ mb_tier_monster.stats.power }}</div>
+                                    <div class="text-[7px] font-mono" style="color: rgba(255,255,255,0.2)">/ 9999</div>
+                                </div>
+                                <div class="rounded-lg p-2.5 text-center" style="background: rgba(0,0,0,0.3)">
+                                    <div class="text-[8px] font-mono tracking-wider" style="color: rgba(255,255,255,0.35)">RECOVERY</div>
+                                    <div class="text-sm font-bold font-mono" style="color: #22c55e">{{ mb_tier_monster.stats.recovery }}</div>
+                                    <div class="text-[7px] font-mono" style="color: rgba(255,255,255,0.2)">/ 9999</div>
+                                </div>
+                                <div class="rounded-lg p-2.5 text-center" style="background: rgba(0,0,0,0.3)">
+                                    <div class="text-[8px] font-mono tracking-wider" style="color: rgba(255,255,255,0.35)">LUCK</div>
+                                    <div class="text-sm font-bold font-mono" style="color: #eab308">{{ mb_tier_monster.stats.luck }}</div>
+                                    <div class="text-[7px] font-mono" style="color: rgba(255,255,255,0.2)">/ 9999</div>
+                                </div>
+                            </div>
+
+                            <!-- Skills -->
+                            <div class="flex gap-2 mb-3">
+                                <div class="flex-1 rounded-lg p-2.5" style="background: rgba(0,0,0,0.3)">
+                                    <div class="text-[8px] font-mono tracking-wider" style="color: rgba(255,255,255,0.35)">SKILL</div>
+                                    <div class="text-[11px] font-mono mt-0.5" style="color: #E0EEFF">{{ mb_tier_template?.skill.name }}</div>
+                                    <div class="text-[9px] font-mono" style="color: rgba(255,255,255,0.3)">{{ mb_tier_template?.skill.description }}</div>
+                                </div>
+                                <div class="flex-1 rounded-lg p-2.5" style="background: rgba(0,0,0,0.3)">
+                                    <div class="text-[8px] font-mono tracking-wider" style="color: rgba(255,255,255,0.35)">LEADER SKILL</div>
+                                    <div class="text-[11px] font-mono mt-0.5" style="color: #E0EEFF">{{ mb_tier_template?.leader_skill.name }}</div>
+                                    <div class="text-[9px] font-mono" style="color: rgba(255,255,255,0.3)">{{ mb_tier_template?.leader_skill.description }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Level Progress Bar -->
+                            <div class="rounded-lg p-2.5" style="background: rgba(0,0,0,0.3)">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[8px] font-mono" style="color: rgba(255,255,255,0.35)">LEVEL PROGRESS</span>
+                                    <span class="text-[9px] font-mono" style="color: #00D4FF">{{ mb_tier_monster.level }} / 99</span>
+                                </div>
+                                <div class="w-full h-2 rounded-full overflow-hidden" style="background: rgba(0,212,255,0.1)">
+                                    <div
+                                        class="h-full rounded-full"
+                                        :style="{ width: (mb_tier_monster.level / 99 * 100) + '%', background: 'linear-gradient(90deg, #00D4FF, #1B8DFF)' }"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Magic Stones + Eggs + Gacha -->
+                    <div class="px-4 pb-3">
+                        <div class="flex gap-3 mb-3">
+                            <div class="flex-1 rounded-lg p-2.5 flex items-center gap-2" style="background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.25)">
+                                <span class="text-lg">&#x1F48E;</span>
+                                <div>
+                                    <div class="text-[8px] font-mono" style="color: rgba(255,255,255,0.35)">MAGIC STONES</div>
+                                    <div class="text-sm font-bold font-mono" style="color: #a855f7">{{ monster_store.magic_stones }}</div>
+                                </div>
+                            </div>
+                            <div class="flex-1 rounded-lg p-2.5 flex items-center gap-2" style="background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.25)">
+                                <span class="text-lg">&#x1F95A;</span>
+                                <div>
+                                    <div class="text-[8px] font-mono" style="color: rgba(255,255,255,0.35)">EGGS</div>
+                                    <div class="text-sm font-bold font-mono" style="color: #eab308">{{ monster_store.unrevealed_eggs.length }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gacha Button -->
+                        <button
+                            class="w-full py-3 rounded-xl font-bold font-mono text-sm tracking-wider mb-2"
+                            :style="monster_store.magic_stones >= 5
+                                ? 'background: linear-gradient(135deg, rgba(168,85,247,0.3), rgba(139,92,246,0.3)); border: 1px solid rgba(168,85,247,0.4); color: #a855f7'
+                                : 'background: rgba(168,85,247,0.05); border: 1px solid rgba(168,85,247,0.15); color: rgba(168,85,247,0.3); cursor: not-allowed'"
+                            :disabled="monster_store.magic_stones < 5"
+                            @click="handleGacha"
+                        >
+                            GACHA PULL (5 &#x1F48E;)
+                        </button>
+                    </div>
+
+                    <!-- Close Button -->
+                    <div class="px-4 pb-4">
+                        <button
+                            class="w-full py-3 rounded-xl font-bold font-mono text-sm tracking-wider"
+                            style="background: linear-gradient(135deg, rgba(0,212,255,0.3), rgba(27,141,255,0.3)); border: 1px solid rgba(0,212,255,0.4); color: #00D4FF"
+                            @click="show_wallet_monster_box = false"
+                        >
+                            CLOSE
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 
 <script setup lang="ts">
 import { resetWalletClient } from "~/composables/useOnChain"
+import type { MonsterElement } from "~/types/monster"
+import { getMonsterTemplate } from "~/constants/monsters"
 
 const game_store = useGameStoreC()
+const monster_store = useMonsterStore()
 const {
     getAddress,
     fetchEthBalance,
@@ -607,6 +828,33 @@ const new_wallet_generated = ref(false)
 const generated_pk = ref("")
 const generated_address = ref("")
 const empty_wallet_error = ref("")
+
+// Monster Box modal state
+const show_wallet_monster_box = ref(false)
+const mb_tiers: MonsterElement[] = [20, 5, 1]
+
+const mb_tier_monster = computed(() => {
+    const tid = monster_store.equipped[monster_store.selected_tier]
+    if (!tid) return null
+    return monster_store.monsters.find(m => m.template_id === tid) ?? null
+})
+
+const mb_tier_template = computed(() => {
+    if (!mb_tier_monster.value) return null
+    return getMonsterTemplate(mb_tier_monster.value.template_id) ?? null
+})
+
+// Wallet page active monster display
+const wallet_active_monster = computed(() => monster_store.active_monster)
+const wallet_active_template = computed(() => monster_store.active_template)
+
+function handleGacha() {
+    const egg_id = monster_store.pullGacha()
+    if (egg_id) {
+        // Auto-reveal for now
+        monster_store.revealEgg(egg_id)
+    }
+}
 
 // Delete confirmation
 const show_delete_confirm = ref(false)

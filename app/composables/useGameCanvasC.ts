@@ -3,6 +3,7 @@ import type { GridCell } from "~/types/game"
 
 export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
     const game_store = useGameStoreC()
+    const monster_store = useMonsterStore()
     let animation_id = 0
 
     const SLOT_MS = GAME_C_GRID.CELL_TIME_SEC * 1000
@@ -261,7 +262,7 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
                 ctx.textBaseline = "middle"
                 const cx = cell_x + cell_w / 2
                 const cy = cell_y + cell_h / 2
-                ctx.fillText(`$${GAME_C_BALANCE.BET_COST}`, cx, cy - 7)
+                ctx.fillText(`$${monster_store.bet_cost}`, cx, cy - 7)
                 ctx.font = is_mobile ? "10px monospace" : "9px monospace"
                 ctx.fillText(`${order.multiplier.toFixed(2)}x`, cx, cy + 7)
             }
@@ -503,7 +504,7 @@ export function useGameCanvasC(canvas_ref: Ref<HTMLCanvasElement | null>) {
 
         game_store.placeOrder({
             cell,
-            cost: GAME_C_BALANCE.BET_COST,
+            cost: monster_store.bet_cost,
             multiplier,
             placed_at: now,
             status: "active",
