@@ -112,7 +112,7 @@
                         <button
                             class="flex-1 py-2.5 text-center text-[11px] font-bold font-mono transition-colors"
                             style="color: #00D4FF; background: rgba(0,212,255,0.05)"
-                            @click="selectMonster(m.template_id)"
+                            @click="showTrainingChoice(m.template_id)"
                         >
                             追加トレーニング
                         </button>
@@ -143,6 +143,57 @@
                     <p class="text-xs font-mono mt-1" style="color: #4A5568">バトルでモンスターを入手しましょう</p>
                 </div>
             </div>
+
+            <!-- Training Mode Choice Modal -->
+            <Teleport to="body">
+                <div
+                    v-if="show_training_choice"
+                    class="fixed inset-0 z-[100] flex items-center justify-center"
+                    @click.self="show_training_choice = false"
+                >
+                    <div class="absolute inset-0 bg-black/60" @click="show_training_choice = false" />
+                    <div class="relative w-[90%] max-w-[380px] rounded-2xl p-5" style="background: #0A1628; border: 1px solid rgba(0,212,255,0.3)">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">{{ training_choice_monster.icon }}</span>
+                                <div>
+                                    <div class="text-white font-bold font-mono text-sm">{{ training_choice_monster.name }}</div>
+                                    <div class="text-[10px] font-mono" style="color: #7A8AA0">トレーニングモード選択</div>
+                                </div>
+                            </div>
+                            <button class="p-1" @click="show_training_choice = false">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                            </button>
+                        </div>
+
+                        <!-- Two Choices Side by Side -->
+                        <div class="flex gap-3">
+                            <!-- Score Free Mode -->
+                            <button
+                                class="flex-1 rounded-xl p-4 text-center transition-all"
+                                style="background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.3)"
+                                @click="startScoreFreeTraining()"
+                            >
+                                <div class="text-2xl mb-2">🎯</div>
+                                <div class="text-[11px] font-bold font-mono mb-1" style="color: #00D4FF">スコアフリー</div>
+                                <div class="text-[9px] font-mono leading-relaxed" style="color: #7A8AA0">スコアに影響なくトレーニングに集中</div>
+                            </button>
+
+                            <!-- Real Battle Mode -->
+                            <button
+                                class="flex-1 rounded-xl p-4 text-center transition-all"
+                                style="background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.3)"
+                                @click="startRealBattleTraining()"
+                            >
+                                <div class="text-2xl mb-2">⚔️</div>
+                                <div class="text-[11px] font-bold font-mono mb-1" style="color: #eab308">実戦モード</div>
+                                <div class="text-[9px] font-mono leading-relaxed" style="color: #7A8AA0">実際のバトルで経験値も獲得</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Teleport>
 
             <!-- Strategy Detail Modal -->
             <Teleport to="body">
@@ -335,6 +386,15 @@ const training_win_rate = ref(0)
 const session_wins = ref(0)
 const session_losses = ref(0)
 
+// Training mode choice modal
+const show_training_choice = ref(false)
+const training_choice_monster_id = ref<string | null>(null)
+const training_choice_monster = computed(() => {
+    if (!training_choice_monster_id.value) return { icon: "?", name: "" }
+    const template = getMonsterTemplate(training_choice_monster_id.value)
+    return { icon: template?.icon_emoji || "?", name: template?.name || "" }
+})
+
 // Strategy modal
 const show_strategy_modal = ref(false)
 const strategy_modal_data = ref<{
@@ -501,6 +561,32 @@ async function viewStrategy(monsterId: string) {
                 training_cache.value[monsterId].pattern = data.learned_pattern
             }
         }
+    }
+}
+
+// ========== Training Mode Choice ==========
+
+function showTrainingChoice(monsterId: string) {
+    training_choice_monster_id.value = monsterId
+    show_training_choice.value = true
+}
+
+function startScoreFreeTraining() {
+    show_training_choice.value = false
+    if (training_choice_monster_id.value) {
+        selectMonster(training_choice_monster_id.value)
+    }
+}
+
+function startRealBattleTraining() {
+    show_training_choice.value = false
+    if (training_choice_monster_id.value) {
+        // Set this monster as active and navigate to Mode C (real battle)
+        const template = getMonsterTemplate(training_choice_monster_id.value)
+        if (template) {
+            monster_store.selectTier(template.element)
+        }
+        navigateTo("/game/mode-c")
     }
 }
 

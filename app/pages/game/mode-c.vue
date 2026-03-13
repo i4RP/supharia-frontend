@@ -1,17 +1,14 @@
 <template>
     <div class="absolute inset-0 top-0 flex flex-col" style="background: #03080F">
-        <!-- Top Bar: Ender Dragon HP + Status -->
+        <!-- Top Bar: Dungeon Boss HP + Status -->
         <div class="absolute top-0 left-0 right-0 z-10 px-3 pt-[env(safe-area-inset-top,8px)] pb-1">
             <div class="flex items-center gap-2">
-                <!-- Dragon Icon + Name -->
-                <div class="flex items-center gap-1.5 flex-shrink-0">
-                    <svg width="20" height="20" viewBox="0 0 36 36" fill="none">
-                        <path d="M18 6L8 14L11 26H25L28 14L18 6Z" stroke="#ef4444" stroke-width="1.5" fill="rgba(239,68,68,0.15)" />
-                        <circle cx="14" cy="15" r="1.5" fill="#ef4444" />
-                        <circle cx="22" cy="15" r="1.5" fill="#ef4444" />
-                    </svg>
-                    <span class="text-white font-bold text-xs">Ender Dragon</span>
-                </div>
+                <!-- Boss Icon + Name (tappable → dungeon select) -->
+                <button class="flex items-center gap-1.5 flex-shrink-0" @click="show_dungeon_select = true">
+                    <span class="text-base">{{ current_dungeon.icon }}</span>
+                    <span class="text-white font-bold text-xs">{{ current_dungeon.name }}</span>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
+                </button>
 
                 <!-- HP Bar -->
                 <div class="flex-1 h-5 rounded-full overflow-hidden relative" style="background: rgba(5,13,26,0.9); border: 1px solid rgba(239,68,68,0.3)">
@@ -76,6 +73,55 @@
                 <span class="text-white font-bold text-sm font-mono">${{ monster_store.bet_cost }}</span>
             </button>
         </div>
+
+        <!-- Dungeon Select Modal -->
+        <Teleport to="body">
+            <div
+                v-if="show_dungeon_select"
+                class="fixed inset-0 z-[100] flex items-end justify-center"
+                @click.self="show_dungeon_select = false"
+            >
+                <div class="absolute inset-0 bg-black/60" @click="show_dungeon_select = false" />
+                <div
+                    class="relative w-full max-w-[420px] rounded-t-2xl overflow-hidden"
+                    style="background: #0A1628; border: 1px solid rgba(239,68,68,0.2); border-bottom: none; max-height: 60vh"
+                >
+                    <div class="flex items-center justify-between px-4 py-3" style="border-bottom: 1px solid rgba(239,68,68,0.15)">
+                        <span class="text-sm font-bold font-mono" style="color: #ef4444">ダンジョン選択</span>
+                        <button class="p-1" @click="show_dungeon_select = false">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                        </button>
+                    </div>
+                    <div class="px-4 py-3 space-y-2">
+                        <button
+                            v-for="d in dungeons"
+                            :key="d.id"
+                            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
+                            :style="selected_dungeon === d.id
+                                ? 'background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4)'
+                                : 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08)'"
+                            @click="selectDungeon(d.id)"
+                        >
+                            <span class="text-2xl">{{ d.icon }}</span>
+                            <div class="flex-1 text-left">
+                                <div class="text-white font-bold text-sm font-mono">{{ d.name }}</div>
+                                <div class="text-[10px] font-mono" style="color: #7A8AA0">{{ d.description }}</div>
+                            </div>
+                            <div v-if="selected_dungeon === d.id" class="text-[10px] font-bold font-mono" style="color: #ef4444">選択中</div>
+                        </button>
+                    </div>
+                    <div class="px-4 pb-4">
+                        <button
+                            class="w-full py-3 rounded-xl font-bold font-mono text-sm tracking-wider"
+                            style="background: linear-gradient(135deg, rgba(239,68,68,0.3), rgba(249,115,22,0.3)); border: 1px solid rgba(239,68,68,0.4); color: #ef4444"
+                            @click="show_dungeon_select = false"
+                        >
+                            決定
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
 
         <!-- Monster Box Modal -->
         <Teleport to="body">
@@ -257,7 +303,30 @@ const { connect, disconnect } = useGameStreamC()
 const { start, stop, handleClick, handleResize } = useGameCanvasC(game_canvas)
 
 const show_monster_box = ref(false)
+const show_dungeon_select = ref(false)
 const tiers: MonsterElement[] = [20, 5, 1]
+
+// Dungeon system
+interface Dungeon {
+    id: string
+    name: string
+    icon: string
+    description: string
+}
+
+const dungeons: Dungeon[] = [
+    { id: "ender_dragon", name: "Ender Dragon", icon: "🐉", description: "HP 100 - 標準ダンジョン" },
+    { id: "ice_golem", name: "Ice Golem", icon: "🧊", description: "HP 150 - 氷の洞窟" },
+    { id: "shadow_phoenix", name: "Shadow Phoenix", icon: "🔥", description: "HP 200 - 炎の神殿" },
+    { id: "crystal_hydra", name: "Crystal Hydra", icon: "💎", description: "HP 300 - 深淵の迷宮" },
+]
+
+const selected_dungeon = ref("ender_dragon")
+const current_dungeon = computed(() => dungeons.find(d => d.id === selected_dungeon.value) || dungeons[0])
+
+function selectDungeon(id: string) {
+    selected_dungeon.value = id
+}
 
 // Get monster info for the currently selected tier
 const tier_monster = computed(() => {
