@@ -13,6 +13,23 @@ export const FUSION_MAX_LEVELS = 3
 /** Gacha cost in magic stones */
 export const GACHA_COST_STONES = 5
 
+/** XP system constants */
+export const XP_PER_TAP = 10          // base XP for placing a bet
+export const XP_WIN_BONUS = 25         // bonus XP for winning
+export const XP_HIGH_MULT_BONUS = 15   // bonus XP for winning at 3x+ multiplier
+
+/** XP needed to reach the next level from current level */
+export function xpToNextLevel(level: number): number {
+    return level * 100
+}
+
+/** Total XP needed from level 1 to reach target level */
+export function totalXpForLevel(target_level: number): number {
+    let total = 0
+    for (let l = 1; l < target_level; l++) total += xpToNextLevel(l)
+    return total
+}
+
 /** Box multiplier bonus per level: base 1.01x, increases with level */
 export function getBoxMultiplier(level: number): number {
     return 1.0 + level * 0.01

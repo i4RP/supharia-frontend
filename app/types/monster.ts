@@ -33,6 +33,7 @@ export interface MonsterTemplate {
 export interface MonsterInstance {
     template_id: string
     level: number       // 1-99
+    xp: number          // current XP within this level
     stats: MonsterStats // scaled by level
     obtained_at: number // timestamp
 }
@@ -53,4 +54,6 @@ export interface MonsterBoxState {
     eggs: Egg[]
     magic_stones: number
     equipped: Record<MonsterElement, string | null> // template_id per tier
+    /** Accumulated training tap counts per monster (from auto-learning) */
+    training_taps: Record<string, number>
 }

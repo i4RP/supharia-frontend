@@ -213,6 +213,34 @@
             </div>
         </Teleport>
 
+        <!-- Level-Up Notification -->
+        <Transition name="level-up">
+            <div
+                v-if="show_level_up"
+                class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none"
+            >
+                <div class="px-6 py-4 rounded-2xl text-center" style="background: rgba(0,0,0,0.9); border: 2px solid #eab308; box-shadow: 0 0 30px rgba(234,179,8,0.4)">
+                    <div class="text-2xl mb-1">⬆️</div>
+                    <div class="text-[10px] font-mono tracking-widest" style="color: #eab308">LEVEL UP!</div>
+                    <div class="text-white font-bold font-mono text-lg mt-1">{{ level_up_info.name }}</div>
+                    <div class="text-xl font-bold font-mono mt-0.5" style="color: #eab308">Lv.{{ level_up_info.level }}</div>
+                </div>
+            </div>
+        </Transition>
+
+        <!-- Active Monster XP indicator (small, bottom-left) -->
+        <div
+            v-if="monster_store.active_monster"
+            class="absolute bottom-[88px] left-3 z-10 flex items-center gap-1.5 px-2 py-1 rounded-lg"
+            style="background: rgba(5,13,26,0.9); border: 1px solid rgba(234,179,8,0.3)"
+        >
+            <span class="text-xs">{{ monster_store.active_template?.icon_emoji }}</span>
+            <span class="text-[9px] font-mono" style="color: #eab308">Lv.{{ monster_store.active_monster.level }}</span>
+            <div class="w-12 h-1.5 rounded-full overflow-hidden" style="background: rgba(234,179,8,0.2)">
+                <div class="h-full rounded-full" :style="{ width: active_xp_pct + '%', background: '#eab308' }" />
+            </div>
+        </div>
+
         <!-- Bottom nav is in parent game.vue -->
     </div>
 </template>
@@ -220,6 +248,7 @@
 <script setup lang="ts">
 import type { MonsterElement } from "~/types/monster"
 import { DRAGON_MAX_HP, getMonsterTemplate } from "~/constants/monsters"
+import { GAME_C_GRID } from "~/constants/game_c"
 
 const game_canvas = useTemplateRef<HTMLCanvasElement>("game_canvas")
 const game_store = useGameStoreC()
@@ -247,6 +276,13 @@ const active_icon = computed(() => {
     return t ? t.icon_emoji : "?"
 })
 
+// Active monster XP percentage
+const active_xp_pct = computed(() => {
+    if (!monster_store.active_monster) return 0
+    const progress = monster_store.getXPProgress(monster_store.active_monster.template_id)
+    return progress.pct
+})
+
 // Ender Dragon HP: starts at 100%, decreases with each win
 const dragon_hp_pct = computed(() => {
     const hits = game_store.session_stats.wins
@@ -260,11 +296,60 @@ const strike_color = ref("rgba(34,197,94,0.15)")
 let last_wins = 0
 let last_losses = 0
 
+// Auto-learning: send tap data to training API on each bet resolve
+const training_api = useTrainingApi()
+const wallet_address = computed(() => {
+    if (typeof window === "undefined") return "local"
+    let addr = localStorage.getItem("mpara_wallet_address")
+    if (!addr) {
+        addr = "local_training_" + Date.now()
+        localStorage.setItem("mpara_wallet_address", addr)
+    }
+    return addr
+})
+
+// Level-up notification
+const show_level_up = ref(false)
+const level_up_info = ref({ name: "", level: 0 })
+
+function autoLearnTap(won: boolean) {
+    const active = monster_store.active_monster
+    if (!active) return
+
+    // Get last resolved order for multiplier info
+    const orders_list = game_store.orders
+    const last_order = orders_list.length > 0 ? orders_list[orders_list.length - 1] : null
+    const multiplier = last_order ? last_order.multiplier : 1.0
+
+    // Award XP to active monster
+    const result = monster_store.recordBattleTap(active.template_id, won, multiplier)
+    if (result.leveled_up) {
+        const tmpl = getMonsterTemplate(active.template_id)
+        level_up_info.value = { name: tmpl?.name || active.template_id, level: result.new_level }
+        show_level_up.value = true
+        setTimeout(() => { show_level_up.value = false }, 2500)
+    }
+
+    // Send tap data to training API (fire-and-forget, non-blocking)
+    const row_offset = last_order ? Math.round((((last_order.cell.price_high + last_order.cell.price_low) / 2) - game_store.current_price) / GAME_C_GRID.CELL_PRICE_STEP) : 0
+    const col = last_order ? last_order.cell.col : 0
+    training_api.recordTap(wallet_address.value, active.template_id, {
+        grid_row: row_offset,
+        grid_col: col,
+        price_at_tap: game_store.current_price,
+        multiplier,
+        result: won ? "win" : "loss",
+    })
+}
+
 watch(() => game_store.session_stats.wins, (val) => {
     if (val > last_wins) {
         strike_color.value = "rgba(34,197,94,0.15)"
         show_strike.value = true
         setTimeout(() => { show_strike.value = false }, 300)
+
+        // Auto-learn from this win
+        autoLearnTap(true)
 
         // Check if dragon defeated
         const hp_remaining = DRAGON_MAX_HP - val
@@ -280,6 +365,9 @@ watch(() => game_store.session_stats.losses, (val) => {
         strike_color.value = "rgba(239,68,68,0.08)"
         show_strike.value = true
         setTimeout(() => { show_strike.value = false }, 200)
+
+        // Auto-learn from this loss
+        autoLearnTap(false)
     }
     last_losses = val
 })

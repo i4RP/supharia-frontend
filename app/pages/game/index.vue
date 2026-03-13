@@ -17,70 +17,124 @@
                 </div>
             </div>
 
-            <!-- Instruction Banner -->
-            <div class="mx-4 mb-3 rounded-xl p-3" style="background: linear-gradient(135deg, rgba(27,141,255,0.1), rgba(0,212,255,0.05)); border: 1px solid rgba(27,141,255,0.2)">
+            <!-- Info Banner: Auto-Learning -->
+            <div class="mx-4 mb-3 rounded-xl p-3" style="background: linear-gradient(135deg, rgba(234,179,8,0.1), rgba(27,141,255,0.05)); border: 1px solid rgba(234,179,8,0.2)">
                 <div class="flex items-center gap-2 mb-1">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B8DFF" stroke-width="2"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>
-                    <span class="text-xs font-bold font-mono" style="color: #1B8DFF">トレーニングモード</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>
+                    <span class="text-xs font-bold font-mono" style="color: #eab308">オートラーニング</span>
                 </div>
-                <p class="text-[11px] leading-relaxed" style="color: #7A8AA0">モンスターを選んでトレーニング開始。自分でタップしてパターンを学習させると、モンスターが自動でプレイします。</p>
+                <p class="text-[11px] leading-relaxed" style="color: #7A8AA0">バトルでプレイするたびにモンスターが自動で学習し、経験値が溜まってレベルアップします。ここで結果確認＆追加トレーニングができます。</p>
                 <a href="https://github.com/i4RP/mpara-learning-engine" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 mt-1.5 text-[10px] font-mono" style="color: #1B8DFF" @click.stop>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="#1B8DFF"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
                     Open Source - Learning Engine
                 </a>
             </div>
 
-            <!-- Monster List -->
+            <!-- Monster Cards with XP -->
             <div class="flex-1 overflow-y-auto px-4 pb-4 space-y-3">
-                <button
+                <div
                     v-for="m in all_monsters"
                     :key="m.template_id"
-                    class="monster-card w-full text-left rounded-xl p-4 relative overflow-hidden"
+                    class="monster-card w-full rounded-xl overflow-hidden"
                     style="background: linear-gradient(135deg, #050D1A 0%, #0A1A30 100%); border: 1px solid rgba(0,212,255,0.3)"
-                    @click="selectMonster(m.template_id)"
                 >
-                    <div class="flex items-center gap-4">
-                        <!-- Monster Icon -->
-                        <div class="flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center text-2xl" style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3)">
-                            {{ m.icon }}
+                    <!-- Monster Main Info -->
+                    <div class="p-4">
+                        <div class="flex items-center gap-4">
+                            <!-- Monster Icon -->
+                            <div class="flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center text-2xl relative" style="background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3)">
+                                {{ m.icon }}
+                                <!-- Level badge -->
+                                <div class="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold font-mono" style="background: #eab308; color: #000">
+                                    {{ m.level }}
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-0.5">
+                                    <h3 class="text-white font-bold text-sm font-mono">{{ m.name }}</h3>
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold font-mono" style="background: rgba(27,141,255,0.15); color: #1B8DFF">${{ m.tier }}</span>
+                                </div>
+                                <!-- XP Progress Bar -->
+                                <div class="flex items-center gap-2 mt-1">
+                                    <div class="flex-1 h-2 rounded-full overflow-hidden" style="background: rgba(234,179,8,0.15)">
+                                        <div
+                                            class="h-full rounded-full transition-all duration-500"
+                                            :style="{ width: getXPPct(m.template_id) + '%', background: 'linear-gradient(90deg, #eab308, #f59e0b)' }"
+                                        />
+                                    </div>
+                                    <span class="text-[9px] font-mono flex-shrink-0" style="color: #eab308">
+                                        {{ getXPDisplay(m.template_id) }}
+                                    </span>
+                                </div>
+                                <!-- Stats row -->
+                                <div class="flex items-center gap-3 mt-1">
+                                    <span class="text-[10px] font-mono" style="color: #ef4444">PWR {{ m.stats.power }}</span>
+                                    <span class="text-[10px] font-mono" style="color: #22c55e">REC {{ m.stats.recovery }}</span>
+                                    <span class="text-[10px] font-mono" style="color: #eab308">LCK {{ m.stats.luck }}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 mb-1">
-                                <h3 class="text-white font-bold text-sm font-mono">{{ m.name }}</h3>
-                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold font-mono" style="background: rgba(0,212,255,0.15); color: #00D4FF">Lv.{{ m.level }}</span>
-                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold font-mono" style="background: rgba(27,141,255,0.15); color: #1B8DFF">${{ m.tier }}</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <span class="text-[10px] font-mono" style="color: #ef4444">PWR {{ m.stats.power }}</span>
-                                <span class="text-[10px] font-mono" style="color: #22c55e">REC {{ m.stats.recovery }}</span>
-                                <span class="text-[10px] font-mono" style="color: #eab308">LCK {{ m.stats.luck }}</span>
-                            </div>
-                            <!-- Training progress -->
-                            <div class="mt-1.5 flex items-center gap-2">
+
+                        <!-- Training Status & Strategy -->
+                        <div class="flex items-center gap-2 mt-3">
+                            <!-- Training progress (API) -->
+                            <div class="flex-1 flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style="background: rgba(0,0,0,0.3)">
+                                <span class="text-[9px] font-mono" style="color: #7A8AA0">学習</span>
                                 <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.08)">
                                     <div
-                                        class="h-full rounded-full transition-all duration-500"
+                                        class="h-full rounded-full"
                                         :style="{ width: getProgressPct(m.template_id) + '%', background: getProgressPct(m.template_id) >= 100 ? '#22c55e' : 'linear-gradient(90deg, #1B8DFF, #00D4FF)' }"
                                     />
                                 </div>
-                                <span class="text-[9px] font-mono flex-shrink-0" :style="{ color: getProgressPct(m.template_id) >= 100 ? '#22c55e' : '#7A8AA0' }">
+                                <span class="text-[9px] font-mono" :style="{ color: getProgressPct(m.template_id) >= 100 ? '#22c55e' : '#7A8AA0' }">
                                     {{ getProgressPct(m.template_id) >= 100 ? 'TRAINED' : getTrainingCount(m.template_id) + '/3' }}
                                 </span>
                             </div>
-                        </div>
-                        <!-- Arrow / AUTO badge -->
-                        <div class="flex-shrink-0">
+
+                            <!-- Strategy badge -->
                             <div
-                                v-if="getProgressPct(m.template_id) >= 100"
-                                class="px-2 py-1 rounded-lg text-[10px] font-bold font-mono"
-                                style="background: rgba(34,197,94,0.2); color: #22c55e; border: 1px solid rgba(34,197,94,0.3)"
+                                v-if="getStrategy(m.template_id)"
+                                class="px-2 py-1.5 rounded-lg text-[9px] font-bold font-mono"
+                                :style="getStrategyStyle(getStrategy(m.template_id)!)"
                             >
-                                AUTO
+                                {{ getStrategyLabel(getStrategy(m.template_id)!) }}
                             </div>
-                            <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(0,212,255,0.5)" stroke-width="2" class="flex-shrink-0"><path d="M9 18l6-6-6-6" /></svg>
+
+                            <!-- Battle taps count -->
+                            <div class="px-2 py-1.5 rounded-lg text-[9px] font-mono" style="background: rgba(234,179,8,0.1); color: #eab308">
+                                {{ getBattleTaps(m.template_id) }} taps
+                            </div>
                         </div>
                     </div>
-                </button>
+
+                    <!-- Action Buttons -->
+                    <div class="flex border-t" style="border-color: rgba(0,212,255,0.15)">
+                        <button
+                            class="flex-1 py-2.5 text-center text-[11px] font-bold font-mono transition-colors"
+                            style="color: #00D4FF; background: rgba(0,212,255,0.05)"
+                            @click="selectMonster(m.template_id)"
+                        >
+                            追加トレーニング
+                        </button>
+                        <div style="width: 1px; background: rgba(0,212,255,0.15)" />
+                        <button
+                            v-if="getProgressPct(m.template_id) >= 100"
+                            class="flex-1 py-2.5 text-center text-[11px] font-bold font-mono"
+                            style="color: #22c55e; background: rgba(34,197,94,0.05)"
+                            @click="viewStrategy(m.template_id)"
+                        >
+                            戦略を見る
+                        </button>
+                        <button
+                            v-else
+                            class="flex-1 py-2.5 text-center text-[11px] font-mono"
+                            style="color: rgba(255,255,255,0.3); background: rgba(0,0,0,0.2)"
+                            disabled
+                        >
+                            未学習
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Empty state -->
                 <div v-if="all_monsters.length === 0" class="text-center py-12">
@@ -89,6 +143,79 @@
                     <p class="text-xs font-mono mt-1" style="color: #4A5568">バトルでモンスターを入手しましょう</p>
                 </div>
             </div>
+
+            <!-- Strategy Detail Modal -->
+            <Teleport to="body">
+                <div
+                    v-if="show_strategy_modal"
+                    class="fixed inset-0 z-[100] flex items-center justify-center"
+                    @click.self="show_strategy_modal = false"
+                >
+                    <div class="absolute inset-0 bg-black/60" @click="show_strategy_modal = false" />
+                    <div class="relative w-[90%] max-w-[380px] rounded-2xl p-5" style="background: #0A1628; border: 1px solid rgba(0,212,255,0.3)">
+                        <!-- Header -->
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-2xl">{{ strategy_modal_data.icon }}</span>
+                            <div>
+                                <div class="text-white font-bold font-mono">{{ strategy_modal_data.name }}</div>
+                                <div class="text-[10px] font-mono" style="color: #eab308">Lv.{{ strategy_modal_data.level }}</div>
+                            </div>
+                            <button class="ml-auto p-1" @click="show_strategy_modal = false">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                            </button>
+                        </div>
+
+                        <!-- Strategy Info -->
+                        <div v-if="strategy_modal_data.pattern" class="space-y-3">
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="rounded-lg p-2 text-center" style="background: rgba(0,0,0,0.3)">
+                                    <div class="text-[8px] font-mono" style="color: rgba(255,255,255,0.35)">勝率</div>
+                                    <div class="text-sm font-bold font-mono" style="color: #22c55e">{{ (strategy_modal_data.pattern.win_rate * 100).toFixed(0) }}%</div>
+                                </div>
+                                <div class="rounded-lg p-2 text-center" style="background: rgba(0,0,0,0.3)">
+                                    <div class="text-[8px] font-mono" style="color: rgba(255,255,255,0.35)">平均倍率</div>
+                                    <div class="text-sm font-bold font-mono" style="color: #00D4FF">{{ strategy_modal_data.pattern.avg_multiplier.toFixed(1) }}x</div>
+                                </div>
+                                <div class="rounded-lg p-2 text-center" style="background: rgba(0,0,0,0.3)">
+                                    <div class="text-[8px] font-mono" style="color: rgba(255,255,255,0.35)">タップ数</div>
+                                    <div class="text-sm font-bold font-mono" style="color: #eab308">{{ strategy_modal_data.pattern.total_taps }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Strategy type -->
+                            <div class="rounded-lg p-3" style="background: rgba(0,0,0,0.3)">
+                                <div class="text-[9px] font-mono mb-1" style="color: rgba(255,255,255,0.35)">戦略タイプ</div>
+                                <div class="text-sm font-bold font-mono" :style="{ color: getStrategyColor(strategy_modal_data.pattern.strategy) }">
+                                    {{ getStrategyLabel(strategy_modal_data.pattern.strategy) }}
+                                </div>
+                                <div class="text-[10px] font-mono mt-1" style="color: #7A8AA0">
+                                    {{ getStrategyDescription(strategy_modal_data.pattern.strategy) }}
+                                </div>
+                            </div>
+
+                            <!-- Preferred positions -->
+                            <div v-if="strategy_modal_data.pattern.preferred_positions.length > 0" class="rounded-lg p-3" style="background: rgba(0,0,0,0.3)">
+                                <div class="text-[9px] font-mono mb-2" style="color: rgba(255,255,255,0.35)">好みのポジション</div>
+                                <div class="space-y-1">
+                                    <div
+                                        v-for="(pos, i) in strategy_modal_data.pattern.preferred_positions.slice(0, 5)"
+                                        :key="i"
+                                        class="flex items-center gap-2"
+                                    >
+                                        <div class="w-16 h-1.5 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.08)">
+                                            <div class="h-full rounded-full" :style="{ width: (pos.win_rate * 100) + '%', background: '#22c55e' }" />
+                                        </div>
+                                        <span class="text-[9px] font-mono" style="color: #7A8AA0">{{ pos.position }} ({{ (pos.win_rate * 100).toFixed(0) }}%)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="text-center py-4">
+                            <div class="text-[11px] font-mono" style="color: #7A8AA0">学習データを読み込み中...</div>
+                        </div>
+                    </div>
+                </div>
+            </Teleport>
         </template>
 
         <!-- Phase 2: Training Session Active -->
@@ -105,6 +232,7 @@
                     <div class="flex items-center gap-1.5 flex-shrink-0">
                         <span class="text-lg">{{ selected_template?.icon_emoji }}</span>
                         <span class="text-white font-bold text-xs font-mono">{{ selected_template?.name }}</span>
+                        <span class="text-[9px] font-mono px-1 py-0.5 rounded" style="background: rgba(234,179,8,0.2); color: #eab308">Lv.{{ getSelectedMonsterLevel() }}</span>
                     </div>
 
                     <!-- Training Progress Bar -->
@@ -189,7 +317,7 @@
 <script setup lang="ts">
 import { calculateMultiplierC, GAME_C_GRID } from "~/constants/game_c"
 import { getMonsterTemplate } from "~/constants/monsters"
-import type { TapRecord } from "~/composables/useTrainingApi"
+import type { TapRecord, LearnedPattern } from "~/composables/useTrainingApi"
 
 const game_canvas = useTemplateRef<HTMLCanvasElement>("game_canvas")
 const game_store = useGameStoreC()
@@ -207,8 +335,17 @@ const training_win_rate = ref(0)
 const session_wins = ref(0)
 const session_losses = ref(0)
 
+// Strategy modal
+const show_strategy_modal = ref(false)
+const strategy_modal_data = ref<{
+    icon: string
+    name: string
+    level: number
+    pattern: LearnedPattern | null
+}>({ icon: "", name: "", level: 0, pattern: null })
+
 // Training data cache (loaded from API)
-const training_cache = ref<Record<string, { training_count: number; win_rate: number; is_trained: boolean }>>({})
+const training_cache = ref<Record<string, { training_count: number; win_rate: number; is_trained: boolean; pattern: LearnedPattern | null }>>({})
 
 // Canvas composable (only used when training is active)
 let canvas_composable: ReturnType<typeof useGameCanvasC> | null = null
@@ -259,12 +396,13 @@ onMounted(async () => {
 async function loadAllTrainingData() {
     const addr = wallet_address.value
     const data = await training_api.getAllTraining(addr)
-    const cache: Record<string, { training_count: number; win_rate: number; is_trained: boolean }> = {}
+    const cache: Record<string, { training_count: number; win_rate: number; is_trained: boolean; pattern: LearnedPattern | null }> = {}
     for (const item of data) {
         cache[item.monster_id] = {
             training_count: item.training_count,
             win_rate: item.win_rate,
             is_trained: item.is_trained,
+            pattern: item.learned_pattern,
         }
     }
     training_cache.value = cache
@@ -279,6 +417,91 @@ function getProgressPct(monsterId: string): number {
 function getTrainingCount(monsterId: string): number {
     const cached = training_cache.value[monsterId]
     return cached ? Math.min(3, cached.training_count) : 0
+}
+
+function getXPPct(monsterId: string): number {
+    const progress = monster_store.getXPProgress(monsterId)
+    return progress.pct
+}
+
+function getXPDisplay(monsterId: string): string {
+    const progress = monster_store.getXPProgress(monsterId)
+    return `${progress.xp}/${progress.xp_to_next} XP`
+}
+
+function getBattleTaps(monsterId: string): number {
+    const progress = monster_store.getXPProgress(monsterId)
+    return progress.total_taps
+}
+
+function getStrategy(monsterId: string): string | null {
+    const cached = training_cache.value[monsterId]
+    return cached?.pattern?.strategy || null
+}
+
+function getStrategyLabel(strategy: string): string {
+    switch (strategy) {
+        case "aggressive": return "アグレッシブ"
+        case "balanced": return "バランス"
+        case "conservative": return "慎重"
+        default: return strategy
+    }
+}
+
+function getStrategyColor(strategy: string): string {
+    switch (strategy) {
+        case "aggressive": return "#ef4444"
+        case "balanced": return "#1B8DFF"
+        case "conservative": return "#22c55e"
+        default: return "#7A8AA0"
+    }
+}
+
+function getStrategyStyle(strategy: string): string {
+    switch (strategy) {
+        case "aggressive": return "background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3)"
+        case "balanced": return "background: rgba(27,141,255,0.15); color: #1B8DFF; border: 1px solid rgba(27,141,255,0.3)"
+        case "conservative": return "background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3)"
+        default: return "background: rgba(122,138,160,0.15); color: #7A8AA0"
+    }
+}
+
+function getStrategyDescription(strategy: string): string {
+    switch (strategy) {
+        case "aggressive": return "高倍率の遠いセルを狙う攻撃的なスタイル"
+        case "balanced": return "リスクとリターンのバランスが取れたスタイル"
+        case "conservative": return "低倍率の近いセルを狙う安定志向スタイル"
+        default: return ""
+    }
+}
+
+function getSelectedMonsterLevel(): number {
+    if (!selected_monster_id.value) return 1
+    const m = monster_store.monsters.find(mon => mon.template_id === selected_monster_id.value)
+    return m ? m.level : 1
+}
+
+async function viewStrategy(monsterId: string) {
+    const template = getMonsterTemplate(monsterId)
+    const monster = monster_store.monsters.find(m => m.template_id === monsterId)
+    strategy_modal_data.value = {
+        icon: template?.icon_emoji || "?",
+        name: template?.name || monsterId,
+        level: monster?.level || 1,
+        pattern: training_cache.value[monsterId]?.pattern || null,
+    }
+    show_strategy_modal.value = true
+
+    // Load fresh pattern if not cached
+    if (!strategy_modal_data.value.pattern) {
+        const data = await training_api.getTraining(wallet_address.value, monsterId)
+        if (data.learned_pattern) {
+            strategy_modal_data.value.pattern = data.learned_pattern
+            if (training_cache.value[monsterId]) {
+                training_cache.value[monsterId].pattern = data.learned_pattern
+            }
+        }
+    }
 }
 
 // ========== Training Session ==========
@@ -385,6 +608,11 @@ async function recordTapFromClick(event: MouseEvent) {
 
         if (result === "win") session_wins.value++
         else session_losses.value++
+
+        // Award XP for manual training taps too
+        if (selected_monster_id.value) {
+            monster_store.recordBattleTap(selected_monster_id.value, result === "win", multiplier)
+        }
 
         const tap: TapRecord = {
             grid_row: row_offset,

@@ -9,6 +9,10 @@ import {
     getBoxMultiplier,
     GACHA_COST_STONES,
     BET_TIERS,
+    XP_PER_TAP,
+    XP_WIN_BONUS,
+    XP_HIGH_MULT_BONUS,
+    xpToNextLevel,
 } from "~/constants/monsters"
 
 const STORAGE_KEY = "mpara_monster_box"
@@ -19,6 +23,7 @@ function createDefaultState(): MonsterBoxState {
         monsters: INITIAL_MONSTERS.map(t => ({
             template_id: t.id,
             level: 1,
+            xp: 0,
             stats: { ...t.base_stats },
             obtained_at: Date.now(),
         })),
@@ -29,6 +34,7 @@ function createDefaultState(): MonsterBoxState {
             5: "wave",
             20: "radon",
         } as Record<MonsterElement, string | null>,
+        training_taps: {},
     }
 }
 
@@ -44,6 +50,12 @@ function loadFromStorage(): MonsterBoxState {
                     parsed.equipped[tier] = null
                 }
             }
+            // Migrate: add xp field if missing
+            for (const m of parsed.monsters) {
+                if (m.xp === undefined) m.xp = 0
+            }
+            // Migrate: add training_taps if missing
+            if (!parsed.training_taps) parsed.training_taps = {}
             return parsed
         }
     } catch { /* ignore */ }
@@ -194,6 +206,62 @@ export const useMonsterStore = defineStore("monster", () => {
         return true
     }
 
+    /** Add XP to a monster, handle level-ups. Returns { leveled_up, new_level } */
+    function addXP(template_id: string, amount: number): { leveled_up: boolean; new_level: number } {
+        const monster = box_state.value.monsters.find(m => m.template_id === template_id)
+        if (!monster) return { leveled_up: false, new_level: 0 }
+        if (monster.level >= MONSTER_MAX_LEVEL) return { leveled_up: false, new_level: monster.level }
+
+        monster.xp += amount
+        let leveled_up = false
+
+        // Check for level-ups (can gain multiple levels at once)
+        while (monster.level < MONSTER_MAX_LEVEL && monster.xp >= xpToNextLevel(monster.level)) {
+            monster.xp -= xpToNextLevel(monster.level)
+            monster.level++
+            leveled_up = true
+
+            // Recalculate stats
+            const template = getMonsterTemplate(template_id)
+            if (template) {
+                monster.stats = calculateMonsterStats(template.base_stats, monster.level)
+            }
+        }
+
+        return { leveled_up, new_level: monster.level }
+    }
+
+    /** Record a battle tap for auto-learning XP */
+    function recordBattleTap(template_id: string, won: boolean, multiplier: number): { leveled_up: boolean; new_level: number; xp_gained: number } {
+        let xp = XP_PER_TAP
+        if (won) {
+            xp += XP_WIN_BONUS
+            if (multiplier >= 3.0) xp += XP_HIGH_MULT_BONUS
+        }
+
+        // Track training taps
+        if (!box_state.value.training_taps[template_id]) {
+            box_state.value.training_taps[template_id] = 0
+        }
+        box_state.value.training_taps[template_id]++
+
+        const result = addXP(template_id, xp)
+        return { ...result, xp_gained: xp }
+    }
+
+    /** Get XP progress info for a monster */
+    function getXPProgress(template_id: string): { xp: number; xp_to_next: number; pct: number; total_taps: number } {
+        const monster = box_state.value.monsters.find(m => m.template_id === template_id)
+        if (!monster) return { xp: 0, xp_to_next: 100, pct: 0, total_taps: 0 }
+        const needed = xpToNextLevel(monster.level)
+        return {
+            xp: monster.xp,
+            xp_to_next: needed,
+            pct: Math.min(100, (monster.xp / needed) * 100),
+            total_taps: box_state.value.training_taps[template_id] || 0,
+        }
+    }
+
     /** Award magic stones + chance for egg drop on boss defeat */
     function onBossDefeat() {
         // Award 3 magic stones
@@ -233,5 +301,8 @@ export const useMonsterStore = defineStore("monster", () => {
         fuseMonsters,
         onBossDefeat,
         getMonstersForTier,
+        addXP,
+        recordBattleTap,
+        getXPProgress,
     }
 })
