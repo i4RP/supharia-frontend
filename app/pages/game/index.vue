@@ -60,7 +60,7 @@
                                     />
                                 </div>
                                 <span class="text-[9px] font-mono flex-shrink-0" :style="{ color: getProgressPct(m.template_id) >= 100 ? '#22c55e' : '#7A8AA0' }">
-                                    {{ getProgressPct(m.template_id) >= 100 ? 'TRAINED' : getTrainingCount(m.template_id) + '/30' }}
+                                    {{ getProgressPct(m.template_id) >= 100 ? 'TRAINED' : getTrainingCount(m.template_id) + '/3' }}
                                 </span>
                             </div>
                         </div>
@@ -113,7 +113,7 @@
                             }"
                         />
                         <span class="absolute inset-0 flex items-center justify-center text-white text-[10px] font-bold font-mono z-10">
-                            {{ training_progress >= 100 ? 'TRAINED!' : current_training_count + '/30' }}
+                            {{ training_progress >= 100 ? 'TRAINED!' : current_training_count + '/3' }}
                         </span>
                     </div>
 
@@ -244,7 +244,7 @@ const selected_template = computed(() => {
 })
 
 const training_progress = computed(() => {
-    return Math.min(100, (current_training_count.value / 30) * 100)
+    return Math.min(100, (current_training_count.value / 3) * 100)
 })
 
 // Load all training data on mount
@@ -269,12 +269,12 @@ async function loadAllTrainingData() {
 function getProgressPct(monsterId: string): number {
     const cached = training_cache.value[monsterId]
     if (!cached) return 0
-    return Math.min(100, (cached.training_count / 30) * 100)
+    return Math.min(100, (cached.training_count / 3) * 100)
 }
 
 function getTrainingCount(monsterId: string): number {
     const cached = training_cache.value[monsterId]
-    return cached ? Math.min(30, cached.training_count) : 0
+    return cached ? Math.min(3, cached.training_count) : 0
 }
 
 // ========== Training Session ==========
@@ -398,7 +398,7 @@ async function recordTapFromClick(event: MouseEvent) {
         training_win_rate.value = total > 0 ? (session_wins.value / total) * 100 : 0
 
         // Auto-analyze when training completes
-        if (resp.is_trained && current_training_count.value === 30) {
+        if (resp.is_trained && current_training_count.value === 3) {
             await training_api.analyzePattern(wallet_address.value, selected_monster_id.value!)
         }
     }, Math.max(wait_time, 1000))
