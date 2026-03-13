@@ -7,14 +7,14 @@
             class="fixed bottom-0 left-0 right-0 z-50 flex items-stretch"
             style="background: rgba(3,8,15,0.95); border-top: 1px solid rgba(27,141,255,0.2); padding-bottom: env(safe-area-inset-bottom, 8px)"
         >
-            <!-- Dungeon List -->
+            <!-- Training -->
             <NuxtLink
                 to="/game"
                 class="nav-btn flex-1 flex items-center justify-center py-4"
-                :class="{ 'nav-active': isDungeonRoute, 'nav-tapped': tapped === 'dungeon' }"
-                @pointerdown="flashTap('dungeon')"
+                :class="{ 'nav-active': isTrainingRoute, 'nav-tapped': tapped === 'training' }"
+                @pointerdown="flashTap('training')"
             >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" :stroke="isDungeonRoute || tapped === 'dungeon' ? '#1B8DFF' : 'rgba(255,255,255,0.4)'" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" :stroke="isTrainingRoute || tapped === 'training' ? '#1B8DFF' : 'rgba(255,255,255,0.4)'" stroke-width="2"><circle cx="6.5" cy="12" r="3.5" /><circle cx="17.5" cy="12" r="3.5" /><line x1="10" y1="12" x2="14" y2="12" /><line x1="3" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="21" y2="12" /></svg>
             </NuxtLink>
 
             <!-- Battle (Game) -->
@@ -57,7 +57,7 @@ definePageMeta({
 
 const route = useRoute()
 
-const isDungeonRoute = computed(() => route.path === "/game")
+const isTrainingRoute = computed(() => route.path === "/game")
 
 const isGameRoute = computed(() => {
     const p = route.path
